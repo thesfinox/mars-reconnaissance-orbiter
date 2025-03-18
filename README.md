@@ -1,18 +1,18 @@
 # STAGE - UQ for Material Science
 
-Zacharie FREDJ-ZADOUN, CentraleSupélec (Saclay)
+**Zacharie FREDJ-ZADOUN**, CentraleSupélec (Saclay)
 
 Encadrants :
 
-- Inna KUCHER (DES/ISAS/DM2S/SGLS/LIAD)
-- Riccardo FINOTELLO (DES/ISAS/DM2S/SGLS/LIAD)
+- **Inna KUCHER** (DES/ISAS/DM2S/SGLS/LIAD)
+- **Riccardo FINOTELLO** (DES/ISAS/DM2S/SGLS/LIAD)
 
 Ce repo git sert à regrouper notes et code du stage. Il ne faut pas hésiter à modifier la structure ou à améliorer la gestion.
 
 > **⚠️ Attention !**
 > Code et notes doivent être compréhensibles et réutilisables !
 
-Voici quelques suggestions pour le déroulement du stage. l est fondamental de garder un esprit critique : toute proposition est discutable et passible d'être modifiée ! 😄
+Voici quelques suggestions pour le déroulement du stage. Il est fondamental de garder un esprit critique : toute proposition est discutable et passible d'être modifiée ! 😄
 
 Conseil d'utilisation :
 
