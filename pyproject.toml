@@ -1,0 +1,100 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hsi-mars"
+authors = [{ name = "Riccardo Finotello", email = "riccardo.finotello@cea.fr" }]
+description = "Open hyperspectral images of the Mars Reconnaissance Orbiter"
+maintainers = [
+    { name = "Riccardo Finotello", email = "riccardo.finotello@cea.fr" },
+]
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = "<3.13"
+keywords = [
+    "hyperspectral imaging",
+    "data analysis",
+    "dataset",
+    "annotations",
+    "machine learning",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Topic :: Scientific/Engineering",
+]
+license = { file = "LICENSE" }
+dynamic = ["version", "dependencies"]
+
+[project.optional-dependencies]
+test = ["pytest>=7.4.0", "pytest-cov>=4.1.0"]
+docs = ["sphinx>=6.2.1", "sphinx-rtd-theme>=1.2.0"]
+
+[project.urls]
+Homepage = "https://gitlab.deeplab.intra.cea.fr/stages-theses/stage-uq-material-science"
+Documentation = "https://gitlab.deeplab.intra.cea.fr/stages-theses/stage-uq-material-science"
+Repository = "https://gitlab.deeplab.intra.cea.fr/stages-theses/stage-uq-material-science"
+Issues = "https://gitlab.deeplab.intra.cea.fr/stages-theses/stage-uq-material-science"
+
+[tool.setuptools.dynamic]
+version = { attr = "hsimars.__version__" }
+dependencies = { file = "requirements.txt" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+    ".venv",
+]
+
+line-length = 80
+indent-width = 4
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+ignore = []
+fixable = ["ALL"]
+unfixable = []
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
