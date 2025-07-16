@@ -4,6 +4,7 @@
 
 # Data
 data/*
+*.tar*
 
 # Documentation builds
 docs/_build/*
@@ -18,6 +19,7 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+uv.lock
 .Python
 build/
 develop-eggs/
