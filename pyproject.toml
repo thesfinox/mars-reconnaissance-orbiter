@@ -26,24 +26,29 @@ classifiers = [
     "Topic :: Scientific/Engineering",
 ]
 license = { file = "LICENSE" }
-dynamic = ["version", "dependencies"]
-
-[project.optional-dependencies]
-test = ["pytest>=7.4.0", "pytest-cov>=4.1.0"]
-docs = ["sphinx>=6.2.1", "sphinx-rtd-theme>=1.2.0"]
-dev = [
-    "pre-commit>=4.2.0",
+dynamic = ["version"]
+dependencies = [
+    "ipykernel==6.29.5",
+    "matplotlib==3.10.3",
+    "opencv-python==4.11.0.86",
+    "pysptools==0.15.0",
+    "scipy==1.15.3",
+    "spectral==0.24",
 ]
 
+[dependency-groups]
+test = ["pytest>=7.4.0", "pytest-cov>=4.1.0"]
+docs = ["sphinx>=6.2.1", "sphinx-rtd-theme>=1.2.0"]
+dev = ["pre-commit>=4.2.0"]
+
 [project.urls]
-Homepage = "https://gitlab.deeplab.intra.cea.fr/stages-theses/stage-uq-material-science"
-Documentation = "https://gitlab.deeplab.intra.cea.fr/stages-theses/stage-uq-material-science"
-Repository = "https://gitlab.deeplab.intra.cea.fr/stages-theses/stage-uq-material-science"
-Issues = "https://gitlab.deeplab.intra.cea.fr/stages-theses/stage-uq-material-science"
+Homepage = "https://github.com/thesfinox/mars-reconnaissance-orbiter"
+Documentation = "https://github.com/thesfinox/mars-reconnaissance-orbiter"
+Repository = "https://github.com/thesfinox/mars-reconnaissance-orbiter"
+Issues = "https://github.com/thesfinox/mars-reconnaissance-orbiter/issues"
 
 [tool.setuptools.dynamic]
 version = { attr = "hsimars.__version__" }
-dependencies = { file = "requirements.txt" }
 
 [tool.setuptools.packages.find]
 where = ["src"]

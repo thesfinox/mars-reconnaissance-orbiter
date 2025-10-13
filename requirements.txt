@@ -1,6 +1,0 @@
-ipykernel==6.29.5
-matplotlib==3.10.3
-opencv-python==4.11.0.86
-pysptools==0.15.0
-scipy==1.15.3
-spectral==0.24
