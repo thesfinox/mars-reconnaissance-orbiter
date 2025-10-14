@@ -13,7 +13,7 @@ build:
     post_install:
       # Install uv for faster dependency management
       - curl -LsSf https://astral.sh/uv/install.sh | sh
-      - export PATH="$HOME/.cargo/bin:$PATH"
+      - export PATH="$HOME/.local/bin:$PATH"
       - uv sync --group docs
 
 # Build documentation in the "docs/" directory with Sphinx
