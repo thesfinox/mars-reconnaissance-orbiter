@@ -140,29 +140,6 @@ License
 
 This project is licensed under the GNU General Public License v3.0. See the LICENSE file for details.
 
-Citation
---------
-
-If you use this package in your research, please cite:
-
-.. code-block:: bibtex
-
-   @article{xi2025crism,
-     author={Xi, Bobo and others},
-     journal={IEEE Geoscience and Remote Sensing Letters},
-     title={Your Paper Title},
-     year={2025},
-     doi={10.1109/LGRS.2025.3522631}
-   }
-
-Contact
--------
-
-**Riccardo Finotello**
-
-* 📧 riccardo.finotello@cea.fr
-* 🔗 `GitHub Repository <https://github.com/thesfinox/mars-reconnaissance-orbiter>`_
-
 Indices and Tables
 ==================
 
