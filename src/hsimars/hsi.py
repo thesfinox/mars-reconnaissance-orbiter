@@ -1,8 +1,36 @@
 """
-Open and manipulate hyperspectral images (HSI).
+Open and manipulate hyperspectral images (HSI) from Mars Reconnaissance Orbiter.
+
+This module provides the `HSIMars` class for working with hyperspectral imaging data
+from the CRISM instrument aboard the Mars Reconnaissance Orbiter. It supports loading,
+processing, and visualizing HSI data along with their annotations.
+
+The module handles:
+- Loading ENVI format hyperspectral images (.hdr and .img files)
+- Processing and cleaning HSI data (removing bad bands, cropping, normalization)
+- Loading and aligning ground truth annotations (.mat files)
+- Visualizing spectral data, false-color images, and annotations
+- Plotting spectra with optional convex hull removal
+- Generating histograms for specific spectral bands
 
 Author: Riccardo Finotello <riccardo.finotello@cea.fr>
+Maintainer: Riccardo Finotello <riccardo.finotello@cea.fr>
+
+Contributors:
+- Riccardo Finotello
+
+Examples
+--------
+>>> from hsimars import HSIMars
+>>> hsi = HSIMars(
+...     hdr_path="path/to/image.hdr", annotations="path/to/annotations.mat"
+... )
+>>> img_data = hsi.get_img()
+>>> print(f"Image shape: {img_data.shape}")
+>>> hsi.plot_spectra(px=[100, 200], convex_hull=True, bands=True)
 """
+
+from __future__ import annotations
 
 from collections import namedtuple
 from pathlib import Path
@@ -18,13 +46,52 @@ from scipy.interpolate import splev, splrep
 from scipy.io import loadmat
 from spectral.io import envi
 
+# Configure matplotlib for consistent styling
 plt.style.use("grayscale")
 mpl.rc("font", size=16)
 
 
 class HSIMars:
     """
-    Open HSIs of the Martian soil and their annotations (if available).
+    Load and manipulate hyperspectral images from Mars Reconnaissance Orbiter.
+
+    This class provides comprehensive functionality for working with CRISM
+    hyperspectral imaging data, including loading ENVI format images, processing
+    spectral data, handling ground truth annotations, and creating visualizations.
+
+    The class implements lazy loading to optimize memory usage - data is only loaded
+    from disk when first accessed and then cached for subsequent operations.
+
+    Attributes
+    ----------
+    hdr_path : Path
+        Path to the ENVI header file (.hdr extension).
+    annotations : Path or None
+        Path to the ground truth annotations file (.mat format), if provided.
+
+    Examples
+    --------
+    >>> # Load HSI data without annotations
+    >>> hsi = HSIMars(hdr_path="data/sample.hdr")
+    >>> img_data = hsi.get_img()
+    >>> print(
+    ...     f"Image dimensions: {img_data.height}x{img_data.width}, {img_data.channels} channels"
+    ... )
+
+    >>> # Load HSI data with annotations
+    >>> hsi = HSIMars(
+    ...     hdr_path="data/sample.hdr", annotations="data/labels.mat"
+    ... )
+    >>> img_data, ann_data = hsi.data()
+    >>> hsi.display()  # Show image with overlaid annotations
+
+    >>> # Plot spectrum for a specific pixel
+    >>> hsi.plot_spectra(px=[100, 200], convex_hull=True, bands=True)
+
+    Notes
+    -----
+    The ENVI .img file containing the actual hyperspectral data must be located
+    in the same directory as the .hdr header file.
     """
 
     def __init__(
@@ -33,43 +100,83 @@ class HSIMars:
         annotations: str | Path | None = None,
     ):
         """
+        Initialize the HSIMars object with paths to data files.
+
         Parameters
         ----------
         hdr_path : str | Path
-            Path to the header (`.hdr` extension) file containing the information.
+            Path to the ENVI header file (.hdr extension) containing metadata
+            about the hyperspectral image. The corresponding .img file with the
+            actual spectral data must be in the same directory.
         annotations : str | Path, optional
-            Path to the ground truth file.
-
-        .. warning::
-
-            The `.img` file containing the hyperspectral data must be in the same directory as the corresponding header file.
+            Path to the ground truth annotations file (.mat format). If None,
+            annotation-related methods will return None. Default is None.
 
         Raises
         ------
         FileNotFoundError
-            If the header file or the annotations could not be found in the filesystem.
+            If the header file does not exist at the specified path.
+        FileNotFoundError
+            If annotations path is provided but the file does not exist.
+
+        Examples
+        --------
+        >>> hsi = HSIMars(hdr_path="path/to/image.hdr")
+        >>> hsi_with_labels = HSIMars(
+        ...     hdr_path="path/to/image.hdr", annotations="path/to/labels.mat"
+        ... )
+
+        Notes
+        -----
+        The constructor only validates file paths - no data is loaded until
+        one of the get_* methods is called. This lazy loading approach
+        minimizes memory usage when working with large datasets.
         """
         self.hdr_path: Path = Path(hdr_path)
         if not self.hdr_path.exists():
             raise FileNotFoundError(
                 f"The header file {self.hdr_path} could not be found in the filesystem."
             )
-        self.annotations: str | Path | None = annotations
-        if self.annotations is not None:
-            self.annotations = Path(self.annotations)
+        self.annotations: Path | None = None
+        if annotations is not None:
+            self.annotations = Path(annotations)
             if not self.annotations.exists():
                 raise FileNotFoundError(
                     f"The annotation file {self.annotations} could not be found in the filesystem."
                 )
 
-        # Cache large objects
-        self._raw = None
-        self._img = None
-        self._ann = None
+        # Cache large objects to avoid repeated disk I/O and processing
+        # These are populated on first access via get_* methods
+        self._raw: envi.BsqFile | None = None
+        self._img: NamedTuple | None = None
+        self._ann: NamedTuple | None = None
+        self._false_colour_bands: NDArray | None = None
 
     def get_raw(self) -> envi.BsqFile:
         """
-        Recover the RAW hyperspectral data.
+        Load the raw ENVI hyperspectral data file.
+
+        This method opens the ENVI format file and returns a file object that
+        provides access to the raw spectral data. The data is cached after the
+        first call to avoid redundant disk I/O operations.
+
+        Returns
+        -------
+        envi.BsqFile
+            ENVI file object providing access to the hyperspectral data. This
+            object supports memory-mapped access to efficiently handle large files.
+
+        Examples
+        --------
+        >>> hsi = HSIMars(hdr_path="data/sample.hdr")
+        >>> raw = hsi.get_raw()
+        >>> print(raw.metadata["wavelength"])  # Access wavelength information
+
+        Notes
+        -----
+        The actual spectral data is stored in a .img file that must be located
+        in the same directory as the .hdr file. The ENVI library automatically
+        locates and opens the corresponding .img file.
         """
         if self._raw is None:
             self._raw = envi.open(self.hdr_path)
@@ -77,20 +184,61 @@ class HSIMars:
 
     def get_img(self) -> NamedTuple:
         """
-        Recover the image as array, and its metadata.
+        Load and process the hyperspectral image data.
+
+        This method loads the raw HSI data, performs preprocessing steps including
+        bad band removal, cropping of invalid pixels, and normalization. The result
+        is cached for efficient subsequent access.
+
+        The preprocessing pipeline includes:
+        1. Loading wavelength information and identifying bad bands
+        2. Removing pixels with the ignore value (65535)
+        3. Cropping the image to remove rows/columns with no valid data
+        4. Removing any remaining bad channels
+        5. Converting to float32 format for numerical processing
 
         Returns
         -------
         NamedTuple
-            A collection containing the following attributes:
+            A named tuple (HSIMarsImageData) containing the following attributes:
 
-            - `hsi`: the HSI data,
-            - `wavelength`: the list of wavelengths (units: nm),
-            - `shape`: the shape of the image,
-            - `height`: the height of the image,
-            - `width`: the width of the image,
-            - `channels`: the number of channels in the image,
-            - `dtype`: the data type of the HSI.
+            - **hsi** : ndarray of shape (height, width, channels)
+                The processed hyperspectral image data as a 3D numpy array.
+                Data type is float32.
+            - **wavelength** : ndarray of shape (channels,)
+                Array of wavelength values in nanometers corresponding to each
+                spectral channel.
+            - **shape** : tuple of (height, width, channels)
+                Dimensions of the hyperspectral image.
+            - **height** : int
+                Number of pixel rows in the image.
+            - **width** : int
+                Number of pixel columns in the image.
+            - **channels** : int
+                Number of spectral bands/channels in the image.
+            - **dtype** : str
+                Data type of the HSI array ('float32').
+
+        Examples
+        --------
+        >>> hsi = HSIMars(hdr_path="data/sample.hdr")
+        >>> img_data = hsi.get_img()
+        >>> print(f"Image shape: {img_data.shape}")
+        >>> print(
+        ...     f"Wavelength range: {img_data.wavelength.min():.1f} - {img_data.wavelength.max():.1f} nm"
+        ... )
+        >>> print(f"Data type: {img_data.dtype}")
+        >>> # Access specific pixel spectrum
+        >>> spectrum = img_data.hsi[100, 200, :]
+        >>> print(f"Spectrum at (100, 200): {spectrum.shape[0]} bands")
+
+        Notes
+        -----
+        The method implements lazy evaluation - the image is only loaded and
+        processed on the first call. Subsequent calls return the cached result.
+
+        The bad band list (bbl) from the ENVI metadata is used to filter out
+        unreliable spectral channels before further processing.
         """
         if self._img is not None:
             return self._img
@@ -102,27 +250,28 @@ class HSIMars:
         img_memmap = img.open_memmap()
         img_metadata = img.metadata
 
+        # Extract wavelength information and ignore value for invalid pixels
         wl = np.array(img_metadata["wavelength"]).astype("float32")
         ignore_value = float(img_metadata["data ignore value"])
 
-        # Select the default bands for visualisation
+        # Select the default bands for false-color visualization
         bands = np.array(img_metadata["default bands"]).astype(int)
         bands = wl[bands]
 
-        # Find bad bands
+        # Filter out bad bands based on metadata bad band list (bbl)
         bbl = np.array(img_metadata["bbl"]).astype("bool")
         img_memmap = img_memmap[..., bbl]
         wl = wl[bbl]
 
-        # Crop the image removing the ignore value
+        # Crop the image by removing rows/columns containing only ignore values
+        # This reduces memory usage and eliminates invalid border regions
         mask = img_memmap != ignore_value
-
         mask_channels = mask.sum(axis=2)
         good_rows = mask_channels.sum(axis=1) > 0
         good_cols = mask_channels.sum(axis=0) > 0
         img_memmap = img_memmap[good_rows, :][:, good_cols]
 
-        # Find remaining bad channgels
+        # Find and remove any remaining bad channels that still contain ignore values
         mask = img_memmap == ignore_value
         idx = np.unique(np.argwhere(mask)[..., 2])
         ch = np.ones((img_memmap.shape[2],), dtype="bool")
@@ -130,7 +279,7 @@ class HSIMars:
         img_memmap = img_memmap[..., ch]
         wl = wl[ch]
 
-        # Update the default bands
+        # Update the default bands indices for false-color visualization
         self._false_colour_bands = np.searchsorted(wl, bands).astype(int)
 
         output = namedtuple(
@@ -158,12 +307,34 @@ class HSIMars:
         return self._img
 
     def _pad_annotations(self, mat: NDArray) -> NDArray:
-        # Get target shape
+        """
+        Pad annotation matrix to match the processed HSI dimensions.
+
+        The annotation matrix may have different dimensions than the processed
+        HSI data after cropping. This method centers the annotations within
+        the target dimensions by adding symmetric padding.
+
+        Parameters
+        ----------
+        mat : NDArray
+            The raw annotation matrix to be padded.
+
+        Returns
+        -------
+        NDArray
+            The padded annotation matrix matching HSI dimensions.
+
+        Notes
+        -----
+        Padding is distributed symmetrically around the annotation data,
+        with any odd remainder added to the bottom/right edges.
+        """
+        # Get target shape from processed image
         img = self.get_img()
         H, W = img.height, img.width
         h, w = mat.shape
 
-        # Pad height and width
+        # Calculate symmetric padding for height and width
         pad_top = (H - h) // 2
         pad_bottom = H - h - pad_top
         pad_left = (W - w) // 2
@@ -171,34 +342,76 @@ class HSIMars:
 
         return np.pad(mat, ((pad_top, pad_bottom), (pad_left, pad_right)))
 
-    def get_annotations(self) -> NamedTuple:
+    def get_annotations(self) -> NamedTuple | None:
         """
-        Recover the annotations as array.
+        Load and process ground truth annotation data.
+
+        Loads annotation labels from a MATLAB .mat file and aligns them with
+        the processed HSI data dimensions. The result is cached for efficient
+        subsequent access.
 
         Returns
         -------
-        NamedTuple
-            A collection containing the following attributes:
+        NamedTuple or None
+            If annotations were provided during initialization, returns a named
+            tuple (HSIMarsAnnotationData) with the following attributes:
 
-            - `labels`: the annotation data,
-            - `shape`: the shape of the image,
-            - `height`: the height of the image,
-            - `width`: the width of the image,
-            - `dtype`: the data type of the annotation.
+            - **labels** : ndarray of shape (height, width)
+                2D array containing class labels for each pixel. Values are
+                unsigned integers representing different material classes.
+                A value of 0 typically indicates unlabeled/background pixels.
+            - **shape** : tuple of (height, width)
+                Dimensions of the annotation matrix.
+            - **height** : int
+                Number of pixel rows (matches HSI height).
+            - **width** : int
+                Number of pixel columns (matches HSI width).
+            - **dtype** : str
+                Data type of the labels array ('uint8').
+
+            Returns None if no annotation file was provided during initialization.
+
+        Examples
+        --------
+        >>> hsi = HSIMars(
+        ...     hdr_path="data/sample.hdr", annotations="data/labels.mat"
+        ... )
+        >>> ann_data = hsi.get_annotations()
+        >>> if ann_data is not None:
+        ...     print(f"Annotation shape: {ann_data.shape}")
+        ...     unique_labels = np.unique(ann_data.labels)
+        ...     print(f"Number of classes: {len(unique_labels)}")
+
+        Notes
+        -----
+        The annotation matrix is automatically padded to match the dimensions
+        of the processed HSI data. This ensures pixel-level alignment between
+        spectral data and labels.
+
+        The method implements lazy evaluation - annotations are only loaded
+        on the first call. Subsequent calls return the cached result.
         """
         if self._ann is not None:
             return self._ann
 
         if self.annotations is None:
-            return
+            return None
 
-        # Get the matrix
+        # Load the annotation matrix from MATLAB file
         ann = loadmat(self.annotations)
-        for k, v in ann.items():
+        # Extract the first numpy array found in the .mat file
+        mat = None
+        for v in ann.values():
             if isinstance(v, np.ndarray):
                 mat = v.astype("uint8")
+                break
 
-        # Pad as input image
+        if mat is None:
+            raise ValueError(
+                f"No valid annotation matrix found in {self.annotations}"
+            )
+
+        # Pad the annotation matrix to match the processed image dimensions
         mat = self._pad_annotations(mat)
 
         output = namedtuple(
@@ -214,38 +427,97 @@ class HSIMars:
         )
         return self._ann
 
-    def data(self):
+    def data(self) -> tuple[NamedTuple, NamedTuple | None]:
         """
-        Return a complete data object.
+        Load both hyperspectral image and annotation data.
+
+        This convenience method loads both the HSI data and annotations (if available)
+        in a single call, ensuring both are cached for subsequent operations.
 
         Returns
         -------
-        tuple[NamedTuple, NamedTuple]
-            Two collections containing the following attributes:
+        tuple[NamedTuple, NamedTuple or None]
+            A tuple containing two elements:
 
-            - **HSIMarsImageData**:
-                - `hsi`: the HSI data,
-                - `wavelength`: the list of wavelengths (units: nm),
-                - `shape`: the shape of the image,
-                - `height`: the height of the image,
-                - `width`: the width of the image,
-                - `channels`: the number of channels in the image,
-                - `dtype`: the data type of the HSI.
-            - **HSIMarsAnnotationData**:
-                - `labels`: the annotation data,
-                - `shape`: the shape of the image,
-                - `height`: the height of the image,
-                - `width`: the width of the image,
-                - `dtype`: the data type of the annotation.
+            1. **HSIMarsImageData** (NamedTuple):
+
+               - **hsi** : ndarray
+                   The HSI data array of shape (height, width, channels).
+               - **wavelength** : ndarray
+                   Array of wavelength values in nm.
+               - **shape** : tuple
+                   Dimensions (height, width, channels).
+               - **height** : int
+                   Number of pixel rows.
+               - **width** : int
+                   Number of pixel columns.
+               - **channels** : int
+                   Number of spectral bands.
+               - **dtype** : str
+                   Data type ('float32').
+
+            2. **HSIMarsAnnotationData** (NamedTuple or None):
+
+               If annotations are available:
+
+               - **labels** : ndarray
+                   Label array of shape (height, width).
+               - **shape** : tuple
+                   Dimensions (height, width).
+               - **height** : int
+                   Number of pixel rows.
+               - **width** : int
+                   Number of pixel columns.
+               - **dtype** : str
+                   Data type ('uint8').
+
+               Returns None if no annotations were provided.
+
+        Examples
+        --------
+        >>> hsi = HSIMars(
+        ...     hdr_path="data/sample.hdr", annotations="data/labels.mat"
+        ... )
+        >>> img_data, ann_data = hsi.data()
+        >>> print(
+        ...     f"Image: {img_data.shape}, Annotations: {ann_data.shape if ann_data else 'None'}"
+        ... )
+
+        Notes
+        -----
+        This method is equivalent to calling `get_img()` and `get_annotations()`
+        separately, but provides a more convenient interface when both datasets
+        are needed.
         """
         return self.get_img(), self.get_annotations()
 
     def _prepare_img(self, img: NDArray) -> NDArray:
-        # Get the image
-        img = img[..., self._false_colour_bands]
-        # img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+        """
+        Prepare HSI data for visualization by creating a false-color RGB image.
 
-        # Normalize the image
+        Selects three spectral bands from the full hyperspectral cube and
+        normalizes them to 8-bit RGB format suitable for display.
+
+        Parameters
+        ----------
+        img : NDArray
+            The full hyperspectral image array.
+
+        Returns
+        -------
+        NDArray
+            8-bit RGB image suitable for display with OpenCV.
+
+        Notes
+        -----
+        Uses the default bands specified in the ENVI header for false-color
+        visualization. These typically correspond to visible and near-infrared
+        wavelengths that provide good visual contrast.
+        """
+        # Select the false-color bands for RGB visualization
+        img = img[..., self._false_colour_bands]
+
+        # Normalize to 8-bit range [0, 255] for display
         img = cv2.normalize(
             img, None, 0, 255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U
         )
@@ -253,53 +525,173 @@ class HSIMars:
         return img
 
     def _prepare_ann(self, img: NDArray) -> NDArray:
-        # Get the image
+        """
+        Prepare annotation data for visualization with color mapping.
+
+        Converts label values to an 8-bit format, applies a colormap for
+        visual distinction between classes, and preserves background pixels
+        as black.
+
+        Parameters
+        ----------
+        img : NDArray
+            The annotation label array.
+
+        Returns
+        -------
+        NDArray
+            8-bit RGB image with colormap applied, suitable for display.
+
+        Notes
+        -----
+        Pixels with label value 0 (background/unlabeled) are displayed as
+        black (0, 0, 0). Other labels are mapped to colors using the TURBO
+        colormap for maximum visual distinction.
+        """
+        # Identify background pixels (label == 0)
         mask = img == 0
+
+        # Normalize labels to 8-bit range
         img = cv2.normalize(
             img, None, 0, 255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U
         )
 
-        # Apply a colour map
+        # Apply TURBO colormap for visual distinction between classes
         img = cv2.applyColorMap(img, cv2.COLORMAP_TURBO)
+
+        # Preserve background as black
         img[mask] = (0, 0, 0)
 
         return img
 
-    def _cv2_imshow(self, title: str, mat: NDArray):
-        # Prepare a new named window
+    def _cv2_imshow(self, title: str, mat: NDArray) -> None:
+        """
+        Display an image in an OpenCV window with keyboard interaction.
+
+        Creates a resizable window, displays the image, and waits for a
+        keypress before closing the window.
+
+        Parameters
+        ----------
+        title : str
+            Window title.
+        mat : NDArray
+            Image array to display.
+
+        Notes
+        -----
+        The window is created with WINDOW_NORMAL flag, making it resizable.
+        Press any key to close the window.
+        """
+        # Create a resizable named window
         cv2.namedWindow(title, flags=cv2.WINDOW_NORMAL)
         cv2.imshow(title, mat)
-        cv2.waitKey(0)
+        cv2.waitKey(0)  # Wait for any keypress
         cv2.destroyWindow(title)
 
-    def display_hsi(self):
-        """Display the HSI (fake colours)."""
+    def display_hsi(self) -> None:
+        """
+        Display the hyperspectral image as a false-color RGB visualization.
 
-        # Open the image in a new window
+        Opens an interactive OpenCV window showing the HSI data rendered using
+        three representative spectral bands. The window can be resized and
+        closed by pressing any key.
+
+        Examples
+        --------
+        >>> hsi = HSIMars(hdr_path="data/sample.hdr")
+        >>> hsi.display_hsi()  # Opens window, press any key to close
+
+        Notes
+        -----
+        The false-color bands are automatically selected from the ENVI header
+        metadata, typically representing visible and near-infrared wavelengths
+        for optimal visual interpretation.
+        """
+        # Load and prepare the HSI for visualization
         img = self.get_img().hsi
         img = self._prepare_img(img)
         self._cv2_imshow(self.hdr_path.stem, img)
 
-    def display_annotations(self):
-        """Display the annotations."""
+    def display_annotations(self) -> None:
+        """
+        Display the ground truth annotations with color-coded labels.
 
-        # Open the image in a new window
-        ann = self.get_annotations().labels.astype("float32")
+        Opens an interactive OpenCV window showing the annotation labels
+        with a colormap applied for visual distinction between classes.
+        Background pixels (label 0) are displayed in black.
+
+        Raises
+        ------
+        AttributeError
+            If no annotations were provided during initialization.
+
+        Examples
+        --------
+        >>> hsi = HSIMars(
+        ...     hdr_path="data/sample.hdr", annotations="data/labels.mat"
+        ... )
+        >>> hsi.display_annotations()  # Opens window, press any key to close
+
+        Notes
+        -----
+        The TURBO colormap is applied to provide maximum visual distinction
+        between different material classes in the annotations.
+        """
+        # Load and prepare annotations for visualization
+        ann_data = self.get_annotations()
+        if ann_data is None:
+            raise ValueError(
+                "No annotations available. Provide annotations path during initialization."
+            )
+
+        ann = ann_data.labels.astype("float32")
         ann = self._prepare_ann(ann)
         self._cv2_imshow(self.hdr_path.stem + " - annotations", ann)
 
-    def display(self):
-        """Display the full information."""
+    def display(self) -> None:
+        """
+        Display comprehensive visualization with HSI, annotations, and overlay.
 
-        # Get the image
+        Opens an interactive OpenCV window showing:
+        - Left panel: False-color HSI visualization
+        - Middle panel: Color-coded annotations (if available)
+        - Right panel: Semi-transparent overlay of annotations on HSI (if available)
+
+        If no annotations are provided, displays only the HSI.
+
+        Examples
+        --------
+        >>> # With annotations
+        >>> hsi = HSIMars(
+        ...     hdr_path="data/sample.hdr", annotations="data/labels.mat"
+        ... )
+        >>> hsi.display()  # Shows three-panel view
+
+        >>> # Without annotations
+        >>> hsi = HSIMars(hdr_path="data/sample.hdr")
+        >>> hsi.display()  # Shows only HSI
+
+        Notes
+        -----
+        The overlay uses 75% weight for the HSI and 25% weight for the
+        annotations, providing a good balance between seeing spectral features
+        and class boundaries.
+        """
+        # Load and prepare the HSI
         img = self.get_img().hsi
         img = self._prepare_img(img)
 
+        # If annotations are available, create a three-panel display
         if self.annotations is not None:
-            ann = self.get_annotations().labels.astype("float32")
-            ann = self._prepare_ann(ann)
-            sup = cv2.addWeighted(img, 0.75, ann, 0.25, 0.0)
-            img = cv2.hconcat([img, ann, sup])
+            ann_data = self.get_annotations()
+            if ann_data is not None:
+                ann = ann_data.labels.astype("float32")
+                ann = self._prepare_ann(ann)
+                # Create semi-transparent overlay (75% HSI, 25% annotations)
+                sup = cv2.addWeighted(img, 0.75, ann, 0.25, 0.0)
+                # Concatenate horizontally: HSI | Annotations | Overlay
+                img = cv2.hconcat([img, ann, sup])
 
         self._cv2_imshow(self.hdr_path.stem, img)
 
@@ -309,55 +701,108 @@ class HSIMars:
         convex_hull: bool = False,
         bands: bool = False,
         output: str | Path | None = None,
-    ):
+    ) -> None:
         """
-        Plot the spectrum of a pixel or the average spectrum of a set of pixels.
+        Plot spectral signature(s) for specified pixel location(s).
+
+        Generates a line plot showing reflectance/intensity as a function of
+        wavelength. For multiple pixels, plots the mean spectrum with standard
+        deviation shading. Optionally applies convex hull removal to normalize
+        continuum and highlights spectral band regions.
 
         Parameters
         ----------
         px : list[int, int] | list[list[int, int]] | NDArray
-            The tuple containing the location of the pixel, or the set of pixels to consider.
-        convex_hull : bool
-            Remove the convex hull of the spectrum. By default `False`.
-        bands : bool
-            Visualise the IR bands on the plot. By default `False`.
+            Pixel coordinates to extract spectra from. Can be:
+
+            - Single pixel: [row, col] or [[row, col]]
+            - Multiple pixels: [[row1, col1], [row2, col2], ...] or 2D array
+
+            Coordinates are in (row, column) format, 0-indexed.
+        convex_hull : bool, optional
+            If True, applies convex hull removal to normalize the spectrum
+            continuum. This technique is useful for analyzing absorption
+            features by removing the overall spectral shape. Default is False.
+        bands : bool, optional
+            If True, overlays colored regions indicating spectral band types:
+            - VIS (Visible): < 750 nm (green)
+            - NIR (Near-Infrared): 750-1400 nm (red)
+            - SWIR (Short-Wave Infrared): 1400-3000 nm (blue)
+            - MWIR (Mid-Wave Infrared): > 3000 nm (magenta)
+            Default is False.
         output : str | Path, optional
-            The name of the output file. If `None`, then display the result.
+            Path to save the plot as an image file. If None (default),
+            displays the plot interactively using matplotlib's show().
+            The directory will be created if it doesn't exist.
+
+        Examples
+        --------
+        >>> hsi = HSIMars(hdr_path="data/sample.hdr")
+        >>> # Plot single pixel spectrum
+        >>> hsi.plot_spectra(px=[100, 200])
+
+        >>> # Plot average spectrum of multiple pixels with standard deviation
+        >>> pixels = [[100, 200], [101, 200], [100, 201], [101, 201]]
+        >>> hsi.plot_spectra(px=pixels, convex_hull=True, bands=True)
+
+        >>> # Save plot to file
+        >>> hsi.plot_spectra(px=[100, 200], output="plots/spectrum.png")
+
+        Notes
+        -----
+        Convex hull removal is performed using the pysptools library. This
+        technique divides the spectrum by its convex hull envelope, effectively
+        normalizing the continuum and emphasizing absorption features.
+
+        For multiple pixels, the standard deviation is shown as a shaded region
+        around the mean spectrum, providing visual indication of spectral
+        variability within the selected region.
         """
-        # Get the image
+        # Load the hyperspectral image data
         img = self.get_img()
         hsi = img.hsi
         wl = img.wavelength
 
-        # Select the pixels
+        # Convert pixel coordinates to 2D array format for consistent handling
         px = np.atleast_2d(np.array(px))
+
+        # Extract spectra for the specified pixels
         spec = hsi[px[:, 0], px[:, 1]]
 
+        # Calculate mean and standard deviation
         if spec.shape[0] == 1:
+            # Single pixel: no standard deviation
             spec_mean = spec[0]
             spec_std = None
         else:
+            # Multiple pixels: compute statistics
             spec_mean = spec.mean(axis=0)
             spec_std = spec.std(axis=0)
 
-        # Convex hull
+        # Apply convex hull removal for continuum normalization if requested
         if convex_hull:
             spec_mean, x_hull, y_hull = convex_hull_removal(spec_mean, wl)
             spec_mean = 1.0 - np.array(spec_mean)
 
-            # Interpolate the convex hull
+            # Also normalize the standard deviation using the convex hull
             if spec_std is not None:
+                # Interpolate hull values at all wavelengths
                 interp = splrep(x_hull, y_hull, k=1)
                 y_hull = splev(wl, interp, der=0)
                 spec_std /= y_hull
 
-        # Plot the spectra
+        # Create the plot with appropriate size and layout
         _, ax = plt.subplots(figsize=(7, 5), layout="constrained")
         ax.grid(True, alpha=0.15, ls="dashed")
 
+        # Overlay spectral band regions if requested
         if bands:
-            y_pos = 0.75 * (spec_mean.max() - spec_mean.min()) + spec_mean.min()
+            # Position text labels at 75% of the y-axis range
+            y_pos = (
+                0.75 * (spec_mean.max() - spec_mean.min()) + spec_mean.min()
+            )
 
+            # Visible band (VIS): < 750 nm
             ax.axvspan(wl.min(), 750, color="g", alpha=0.15)
             ax.text(
                 wl.min() + (750 - wl.min()) / 2.0,
@@ -368,6 +813,8 @@ class HSIMars:
                 va="bottom",
                 ha="center",
             )
+
+            # Near-Infrared band (NIR): 750-1400 nm
             ax.axvspan(750, 1400, color="r", alpha=0.15)
             ax.text(
                 750 + (1400 - 750) / 2.0,
@@ -378,6 +825,8 @@ class HSIMars:
                 va="bottom",
                 ha="center",
             )
+
+            # Short-Wave Infrared band (SWIR): 1400-3000 nm
             ax.axvspan(1400, 3000, color="b", alpha=0.15)
             ax.text(
                 1400 + (3000 - 1400) / 2.0,
@@ -388,6 +837,8 @@ class HSIMars:
                 va="bottom",
                 ha="center",
             )
+
+            # Mid-Wave Infrared band (MWIR): > 3000 nm
             ax.axvspan(3000, wl.max(), color="m", alpha=0.15)
             ax.text(
                 3000 + (wl.max() - 3000) / 2.0,
@@ -399,17 +850,21 @@ class HSIMars:
                 ha="center",
             )
 
+        # Plot the mean spectrum
         ax.plot(wl, spec_mean, "k-", label="spectrum")
+
+        # Add standard deviation shading for multiple pixels
         if spec_std is not None:
             ax.fill_between(
                 wl,
-                (spec_mean - spec_std).clip(0, None),
+                (spec_mean - spec_std).clip(0, None),  # Clip to non-negative
                 spec_mean + spec_std,
                 label="$\\pm \\sigma$",
                 color="k",
                 alpha=0.15,
             )
 
+            # Add legend when showing standard deviation
             ax.legend(
                 loc="upper center",
                 bbox_to_anchor=(0.5, -0.15),
@@ -417,49 +872,98 @@ class HSIMars:
                 frameon=False,
             )
 
+        # Set axis labels
         ax.set_xlabel("wavelength (nm)")
         ax.set_ylabel("intensity (a.u.)")
 
+        # Display or save the plot
         if output is None:
             plt.show()
         else:
             output = Path(output)
             output.parent.mkdir(parents=True, exist_ok=True)
             plt.savefig(str(output))
+            plt.close()  # Close the figure to free memory
 
     def plot_histogram(
         self, band: int | float, output: str | Path | None = None
-    ):
+    ) -> None:
         """
-        Plot the histogram of a particular absorption band.
+        Plot the intensity distribution histogram for a specific spectral band.
+
+        Generates a probability density histogram showing the distribution of
+        pixel intensity values across the image for the selected wavelength band.
+        Useful for analyzing the statistical properties of spectral features.
 
         Parameters
         ----------
         band : int | float
-            The band to consider. If integer, than the particular index will be consider.
+            Spectral band selector. Can be:
+
+            - **int**: Direct band index (0-based) in the spectral dimension.
+            - **float**: Wavelength in nanometers. The closest available
+              wavelength will be automatically selected.
         output : str | Path, optional
-            The name of the output file. If `None`, then display the result.
+            Path to save the histogram plot as an image file. If None (default),
+            displays the plot interactively using matplotlib's show().
+            The directory will be created if it doesn't exist.
+
+        Examples
+        --------
+        >>> hsi = HSIMars(hdr_path="data/sample.hdr")
+        >>> # Plot histogram for band at index 100
+        >>> hsi.plot_histogram(band=100)
+
+        >>> # Plot histogram for band nearest to 1500 nm wavelength
+        >>> hsi.plot_histogram(band=1500.0)
+
+        >>> # Save histogram to file
+        >>> hsi.plot_histogram(
+        ...     band=1500.0, output="plots/histogram_1500nm.png"
+        ... )
+
+        Notes
+        -----
+        The histogram uses 100 bins and is normalized to show probability
+        density rather than raw counts. This normalization facilitates
+        comparison between different bands or images.
+
+        The histogram includes all valid pixels in the image for the selected
+        band, providing a global view of intensity distribution.
         """
-        # Get the image
+        # Load the hyperspectral image data
         img = self.get_img()
         hsi = img.hsi
         wl = img.wavelength
-        idx = band if isinstance(band, int) else np.argmin(np.abs(wl - band))
-        hist = hsi[..., idx].ravel()
-        wl = wl[idx]
 
-        # Plot the histogram
+        # Select the appropriate band index
+        if isinstance(band, int):
+            # Direct index selection
+            idx = band
+        else:
+            # Find closest wavelength to the requested value
+            idx = np.argmin(np.abs(wl - band))
+
+        # Extract pixel values for the selected band and flatten to 1D
+        hist = hsi[..., idx].ravel()
+        actual_wl = wl[idx]
+
+        # Create the histogram plot
         _, ax = plt.subplots(figsize=(7, 5), layout="constrained")
         ax.grid(True, alpha=0.15, ls="dashed")
 
+        # Plot normalized histogram (probability density)
         ax.hist(hist, bins=100, density=True, histtype="step", align="mid")
 
-        ax.set_xlabel(f"pixel values (band: {wl:.2f} nm)")
+        # Set axis labels with wavelength information
+        ax.set_xlabel(f"pixel values (band: {actual_wl:.2f} nm)")
         ax.set_ylabel("density")
 
+        # Display or save the plot
         if output is None:
             plt.show()
         else:
             output = Path(output)
             output.parent.mkdir(parents=True, exist_ok=True)
             plt.savefig(str(output))
+            plt.close()  # Close the figure to free memory
