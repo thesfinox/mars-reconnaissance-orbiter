@@ -31,7 +31,7 @@ The simplest use case is loading and displaying a hyperspectral image:
 .. note::
 
    The ``.hdr`` file must be accompanied by a corresponding ``.img`` file in the same directory.
-   Both files are part of the ENVI format standard used by CRISM.
+   Both files are part of the ENVI format standard used by `CRISM <http://crism.jhuapl.edu/>`_.
 
 Displaying Images
 ~~~~~~~~~~~~~~~~~

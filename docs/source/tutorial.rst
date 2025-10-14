@@ -47,7 +47,7 @@ The following Jupyter notebooks provide step-by-step tutorials with executable c
 
 **What you'll learn:**
 
-* Understanding hyperspectral imaging and the CRISM instrument on Mars
+* Understanding hyperspectral imaging and the `CRISM <http://crism.jhuapl.edu/>`_ instrument on Mars
 * Loading and inspecting multidimensional data structures
 * Visualizing spectral signatures and false-color images
 * Analyzing ground truth annotations for supervised learning
@@ -96,7 +96,7 @@ After completing this tutorial, you will be able to:
 Dataset Information
 -------------------
 
-The tutorials use data from the Mars Reconnaissance Orbiter's CRISM instrument. The dataset was published by:
+The tutorials use data from the Mars Reconnaissance Orbiter's `CRISM <http://crism.jhuapl.edu/>`_ instrument. The dataset was published by:
 
     Xi *et al.*, "A Large-Scale Benchmark Dataset for Martian Surface Material Classification,"
     IEEE Geoscience and Remote Sensing Letters, 2025.

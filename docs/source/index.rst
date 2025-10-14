@@ -9,14 +9,14 @@ HSI Mars: Hyperspectral Image Analysis for Mars Reconnaissance Orbiter
    :target: https://www.gnu.org/licenses/gpl-3.0
    :alt: License: GPL v3
 
-A Python package for loading, processing, and visualizing hyperspectral imaging (HSI) data from the CRISM instrument aboard NASA's Mars Reconnaissance Orbiter (MRO).
+A Python package for loading, processing, and visualizing hyperspectral imaging (HSI) data from the `CRISM <http://crism.jhuapl.edu/>`_ instrument aboard NASA's Mars Reconnaissance Orbiter (MRO).
 
 Overview
 --------
 
 This package provides intuitive tools for working with Martian hyperspectral data, enabling researchers to:
 
-* 📊 Load and process CRISM hyperspectral images in ENVI format
+* 📊 Load and process `CRISM <http://crism.jhuapl.edu/>`_ hyperspectral images in ENVI format
 * 🏷️ Handle ground truth annotations for machine learning applications
 * 🎨 Create false-color visualizations of spectral data
 * 📈 Plot and analyze spectral signatures with advanced processing
