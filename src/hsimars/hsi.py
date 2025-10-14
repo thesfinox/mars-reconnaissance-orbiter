@@ -81,9 +81,7 @@ class HSIMars:
     ... )
 
     >>> # Load HSI data with annotations
-    >>> hsi = HSIMars(
-    ...     hdr_path="data/sample.hdr", annotations="data/labels.mat"
-    ... )
+    >>> hsi = HSIMars(hdr_path="data/sample.hdr", annotations="data/labels.mat")
     >>> img_data, ann_data = hsi.data()
     >>> hsi.display()  # Show image with overlaid annotations
 
@@ -800,9 +798,7 @@ class HSIMars:
         # Overlay spectral band regions if requested
         if bands:
             # Position text labels at 75% of the y-axis range
-            y_pos = (
-                0.75 * (spec_mean.max() - spec_mean.min()) + spec_mean.min()
-            )
+            y_pos = 0.75 * (spec_mean.max() - spec_mean.min()) + spec_mean.min()
 
             # Visible band (VIS): < 750 nm
             ax.axvspan(wl.min(), 750, color="g", alpha=0.15)
@@ -920,9 +916,7 @@ class HSIMars:
         >>> hsi.plot_histogram(band=1500.0)
 
         >>> # Save histogram to file
-        >>> hsi.plot_histogram(
-        ...     band=1500.0, output="plots/histogram_1500nm.png"
-        ... )
+        >>> hsi.plot_histogram(band=1500.0, output="plots/histogram_1500nm.png")
 
         Notes
         -----
