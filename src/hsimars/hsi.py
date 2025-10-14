@@ -41,6 +41,7 @@ from typing import NamedTuple
 import cv2
 import matplotlib as mpl
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 from numpy.typing import NDArray
 from pysptools.spectro import convex_hull_removal
@@ -81,7 +82,9 @@ class HSIMars:
     ... )
 
     >>> # Load HSI data with annotations
-    >>> hsi = HSIMars(hdr_path="data/sample.hdr", annotations="data/labels.mat")
+    >>> hsi = HSIMars(
+    ...     hdr_path="data/sample.hdr", annotations="data/labels.mat"
+    ... )
     >>> img_data, ann_data = hsi.data()
     >>> hsi.display()  # Show image with overlaid annotations
 
@@ -98,6 +101,7 @@ class HSIMars:
         self,
         hdr_path: str | Path,
         annotations: str | Path | None = None,
+        label_names_path: str | Path | None = None,
     ):
         """
         Initialize the HSIMars object with paths to data files.
@@ -111,6 +115,10 @@ class HSIMars:
         annotations : str | Path, optional
             Path to the ground truth annotations file (.mat format). If None,
             annotation-related methods will return None. Default is None.
+        label_names_path : str | Path, optional
+            Path to the Excel file containing label name mappings. If None,
+            the method will look for a file named ``data_description.xlsx``
+            in the same directory as the HDR file. Default is None.
 
         Raises
         ------
@@ -118,12 +126,19 @@ class HSIMars:
             If the header file does not exist at the specified path.
         FileNotFoundError
             If annotations path is provided but the file does not exist.
+        FileNotFoundError
+            If label_names_path is provided but the file does not exist.
 
         Examples
         --------
         >>> hsi = HSIMars(hdr_path="path/to/image.hdr")
         >>> hsi_with_labels = HSIMars(
         ...     hdr_path="path/to/image.hdr", annotations="path/to/labels.mat"
+        ... )
+        >>> hsi_custom_labels = HSIMars(
+        ...     hdr_path="path/to/image.hdr",
+        ...     annotations="path/to/labels.mat",
+        ...     label_names_path="path/to/custom_labels.xlsx",
         ... )
 
         Notes
@@ -143,6 +158,14 @@ class HSIMars:
             if not self.annotations.exists():
                 raise FileNotFoundError(
                     f"The annotation file {self.annotations} could not be found in the filesystem."
+                )
+
+        self.label_names_path: Path | None = None
+        if label_names_path is not None:
+            self.label_names_path = Path(label_names_path)
+            if not self.label_names_path.exists():
+                raise FileNotFoundError(
+                    f"The label names file {self.label_names_path} could not be found in the filesystem."
                 )
 
         # Cache large objects to avoid repeated disk I/O and processing
@@ -342,6 +365,122 @@ class HSIMars:
 
         return np.pad(mat, ((pad_top, pad_bottom), (pad_left, pad_right)))
 
+    def _load_label_names(self) -> dict[int, str]:
+        """
+        Load label names from the data description Excel file.
+
+        This method reads the data description Excel file and extracts the mapping
+        between numerical class labels and their human-interpretable names for the
+        current dataset.
+
+        The method automatically identifies the dataset by extracting a two-letter
+        prefix from the HDR filename (e.g., "HC", "NF", or "UP") and locates the
+        corresponding section in the Excel file. It then parses the class ID and
+        class name columns to build the label mapping dictionary.
+
+        Returns
+        -------
+        dict[int, str]
+            A dictionary mapping numerical class labels (integers) to their
+            corresponding human-readable class names (strings). For example:
+            {1: 'Analcime', 2: 'Plagioclase', 3: 'Prehnite', ...}
+
+            Returns an empty dictionary if:
+            - The Excel file is not found
+            - The dataset prefix is not found in the Excel file
+            - The Excel file structure is invalid or cannot be parsed
+
+        Notes
+        -----
+        If ``label_names_path`` was provided during initialization, that file
+        will be used. Otherwise, the method looks for a file named
+        ``data_description.xlsx`` in the same directory as the HDR file.
+
+        The file should contain sections for each dataset, where each section
+        starts with a row containing the dataset name (e.g., "HC", "NF", "UP"),
+        followed by a header row with columns "Class  ID", "Class Name", and
+        "Total", and then data rows containing the class ID and name pairs.
+
+        This method is called internally by :meth:`get_annotations` to populate
+        the ``label_names`` field of the ``HSIMarsAnnotationData`` named tuple.
+
+        Examples
+        --------
+        The expected Excel file structure for a dataset section:
+
+        .. code-block:: text
+
+            HC
+            Class  ID  |  Class Name       |  Total
+            1          |  Analcime         |  940
+            2          |  Plagioclase      |  1472
+            3          |  Prehnite         |  1560
+            ...
+
+        Warnings
+        --------
+        If the Excel file or dataset section cannot be found, this method
+        returns an empty dictionary rather than raising an exception. This
+        allows the annotation loading process to continue even when label
+        names are unavailable, though the ``label_names`` field will be empty.
+        """
+        # Determine which Excel file to use
+        if self.label_names_path is not None:
+            excel_path = self.label_names_path
+        else:
+            # Look for data_description.xlsx in same directory as HDR file
+            excel_path = self.hdr_path.parent / "data_description.xlsx"
+
+        # Return empty dict if Excel file doesn't exist
+        if not excel_path.exists():
+            return {}
+
+        # Extract dataset prefix from HDR filename (first 2 characters)
+        dataset_name = self.hdr_path.stem[:2].upper()
+
+        try:
+            # Read Excel file without header to access raw cell data
+            df = pd.read_excel(excel_path, header=None)
+
+            # Find the row containing the dataset name identifier
+            dataset_row_idx = None
+            for idx, row in df.iterrows():
+                if row[0] == dataset_name:
+                    dataset_row_idx = idx
+                    break
+
+            # Return empty dict if dataset not found in Excel
+            if dataset_row_idx is None:
+                return {}
+
+            # Skip the header row (next row after dataset name)
+            # and start reading class labels from the following row
+            data_start_row = dataset_row_idx + 2
+
+            # Parse class ID and name pairs until hitting end marker
+            label_map = {}
+            for row_idx in range(data_start_row, len(df)):
+                row = df.iloc[row_idx]
+
+                # Stop at empty row or "Total" row (end of section)
+                if pd.isna(row[0]):
+                    break
+
+                # Parse and store class ID to name mapping
+                try:
+                    class_id = int(row[0])
+                    class_name = str(row[1]).strip()
+                    label_map[class_id] = class_name
+                except (ValueError, TypeError):
+                    # Skip rows that don't contain valid ID/name pairs
+                    continue
+
+            return label_map
+
+        except Exception:
+            # Return empty dict if any error occurs during parsing
+            return {}
+
     def get_annotations(self) -> NamedTuple | None:
         """
         Load and process ground truth annotation data.
@@ -368,6 +507,11 @@ class HSIMars:
                 Number of pixel columns (matches HSI width).
             - **dtype** : str
                 Data type of the labels array ('uint8').
+            - **label_names** : dict[int, str]
+                Dictionary mapping numerical class labels to human-readable
+                class names. For example: {1: 'Analcime', 2: 'Plagioclase'}.
+                Will be an empty dictionary if the label mapping file is not
+                found or cannot be parsed.
 
             Returns None if no annotation file was provided during initialization.
 
@@ -414,9 +558,12 @@ class HSIMars:
         # Pad the annotation matrix to match the processed image dimensions
         mat = self._pad_annotations(mat)
 
+        # Load label names from the data description Excel file
+        label_names = self._load_label_names()
+
         output = namedtuple(
             "HSIMarsAnnotationData",
-            ["labels", "shape", "height", "width", "dtype"],
+            ["labels", "shape", "height", "width", "dtype", "label_names"],
         )
         self._ann = output(
             labels=mat,
@@ -424,6 +571,7 @@ class HSIMars:
             height=mat.shape[0],
             width=mat.shape[1],
             dtype="uint8",
+            label_names=label_names,
         )
         return self._ann
 
@@ -470,6 +618,9 @@ class HSIMars:
                    Number of pixel columns.
                - **dtype** : str
                    Data type ('uint8').
+               - **label_names** : dict[int, str]
+                   Dictionary mapping numerical class labels to human-readable
+                   class names.
 
                Returns None if no annotations were provided.
 
@@ -798,7 +949,9 @@ class HSIMars:
         # Overlay spectral band regions if requested
         if bands:
             # Position text labels at 75% of the y-axis range
-            y_pos = 0.75 * (spec_mean.max() - spec_mean.min()) + spec_mean.min()
+            y_pos = (
+                0.75 * (spec_mean.max() - spec_mean.min()) + spec_mean.min()
+            )
 
             # Visible band (VIS): < 750 nm
             ax.axvspan(wl.min(), 750, color="g", alpha=0.15)
@@ -916,7 +1069,9 @@ class HSIMars:
         >>> hsi.plot_histogram(band=1500.0)
 
         >>> # Save histogram to file
-        >>> hsi.plot_histogram(band=1500.0, output="plots/histogram_1500nm.png")
+        >>> hsi.plot_histogram(
+        ...     band=1500.0, output="plots/histogram_1500nm.png"
+        ... )
 
         Notes
         -----

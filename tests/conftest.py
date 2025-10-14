@@ -227,3 +227,33 @@ def expected_stub_dimensions():
 def nonexistent_file_path(tmp_path):
     """Fixture providing path to a non-existent file for error testing."""
     return tmp_path / "nonexistent_file.hdr"
+
+
+@pytest.fixture
+def stub_label_names_excel(tmp_path):
+    """
+    Create a stub Excel file with label name mappings.
+
+    Creates an Excel file matching the expected format with test dataset
+    information. The file contains label mappings for a 'TE' (test) dataset.
+    """
+    import pandas as pd
+
+    excel_path = tmp_path / "data_description.xlsx"
+
+    # Create data matching the expected format
+    # The stub data uses 'TE' as the prefix (from 'test_data.hdr')
+    data = [
+        ["TE", None, None],
+        ["Class  ID", "Class Name", "Total"],
+        [1, "Test Mineral A", 3000],
+        [2, "Test Mineral B", 3000],
+        [3, "Test Mineral C", 3000],
+        [4, "Test Mineral D", 1200],
+        [None, "Total", 10200],
+    ]
+
+    df = pd.DataFrame(data)
+    df.to_excel(excel_path, index=False, header=False)
+
+    return excel_path

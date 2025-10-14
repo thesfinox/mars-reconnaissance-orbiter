@@ -224,6 +224,7 @@ class TestHSIMarsAnnotationLoading:
         assert hasattr(ann, "height")
         assert hasattr(ann, "width")
         assert hasattr(ann, "dtype")
+        assert hasattr(ann, "label_names")
 
     def test_get_annotations_dimensions_match_image_dimensions(
         self, stub_hsi_files
@@ -277,6 +278,138 @@ class TestHSIMarsAnnotationLoading:
         assert (
             len(unique_labels) > 0
         )  # At least one class (even if just background)
+
+    def test_get_annotations_label_names_is_dict(self, stub_hsi_files):
+        """Verify that label_names attribute is a dictionary."""
+        hsi = HSIMars(
+            hdr_path=str(stub_hsi_files.hdr_path),
+            annotations=str(stub_hsi_files.annotations_path),
+        )
+        ann = hsi.get_annotations()
+
+        # label_names should be a dictionary
+        assert isinstance(ann.label_names, dict)
+        # Keys should be integers, values should be strings
+        for key, value in ann.label_names.items():
+            assert isinstance(key, int)
+            assert isinstance(value, str)
+
+
+class TestHSIMarsLabelNames:
+    """Test suite for label names loading functionality."""
+
+    def test_initialization_raises_error_when_label_names_file_does_not_exist(
+        self, stub_hsi_files, nonexistent_file_path
+    ):
+        """Verify that FileNotFoundError is raised when label_names_path is invalid."""
+        with pytest.raises(FileNotFoundError, match="label names file"):
+            HSIMars(
+                hdr_path=str(stub_hsi_files.hdr_path),
+                annotations=str(stub_hsi_files.annotations_path),
+                label_names_path=str(nonexistent_file_path),
+            )
+
+    def test_label_names_empty_when_no_excel_file_exists(self, stub_hsi_files):
+        """Verify that label_names is empty dict when no Excel file is found."""
+        hsi = HSIMars(
+            hdr_path=str(stub_hsi_files.hdr_path),
+            annotations=str(stub_hsi_files.annotations_path),
+        )
+        ann = hsi.get_annotations()
+
+        # Should return empty dict when Excel file doesn't exist
+        assert ann.label_names == {}
+
+    def test_label_names_loaded_from_default_location(
+        self, stub_hsi_files, stub_label_names_excel
+    ):
+        """Verify that label_names loads from default location (HDR parent dir)."""
+        hsi = HSIMars(
+            hdr_path=str(stub_hsi_files.hdr_path),
+            annotations=str(stub_hsi_files.annotations_path),
+        )
+        ann = hsi.get_annotations()
+
+        # Should load from default location (parent dir of HDR file)
+        assert len(ann.label_names) > 0
+        assert 1 in ann.label_names
+        assert ann.label_names[1] == "Test Mineral A"
+        assert 2 in ann.label_names
+        assert ann.label_names[2] == "Test Mineral B"
+
+    def test_label_names_loaded_from_custom_path(
+        self, stub_hsi_files, stub_label_names_excel
+    ):
+        """Verify that label_names loads from custom path when provided."""
+        hsi = HSIMars(
+            hdr_path=str(stub_hsi_files.hdr_path),
+            annotations=str(stub_hsi_files.annotations_path),
+            label_names_path=str(stub_label_names_excel),
+        )
+        ann = hsi.get_annotations()
+
+        # Should load from custom path
+        assert len(ann.label_names) == 4
+        assert ann.label_names[1] == "Test Mineral A"
+        assert ann.label_names[4] == "Test Mineral D"
+
+    def test_label_names_with_missing_dataset_in_excel(
+        self, stub_hsi_files, tmp_path
+    ):
+        """Verify that label_names is empty when dataset not found in Excel."""
+        import pandas as pd
+
+        # Create Excel file without the 'TE' dataset
+        excel_path = tmp_path / "data_description.xlsx"
+        data = [
+            ["HC", None, None],
+            ["Class  ID", "Class Name", "Total"],
+            [1, "Some Mineral", 100],
+        ]
+        df = pd.DataFrame(data)
+        df.to_excel(excel_path, index=False, header=False)
+
+        hsi = HSIMars(
+            hdr_path=str(stub_hsi_files.hdr_path),
+            annotations=str(stub_hsi_files.annotations_path),
+            label_names_path=str(excel_path),
+        )
+        ann = hsi.get_annotations()
+
+        # Should return empty dict when dataset not found
+        assert ann.label_names == {}
+
+    def test_label_names_with_malformed_excel_file(
+        self, stub_hsi_files, tmp_path
+    ):
+        """Verify that label_names is empty when Excel file is malformed."""
+        import pandas as pd
+
+        # Create malformed Excel file
+        excel_path = tmp_path / "data_description.xlsx"
+        data = [["Invalid", "Data", "Structure"]]
+        df = pd.DataFrame(data)
+        df.to_excel(excel_path, index=False, header=False)
+
+        hsi = HSIMars(
+            hdr_path=str(stub_hsi_files.hdr_path),
+            annotations=str(stub_hsi_files.annotations_path),
+            label_names_path=str(excel_path),
+        )
+        ann = hsi.get_annotations()
+
+        # Should return empty dict on parsing errors
+        assert ann.label_names == {}
+
+    def test_label_names_empty_without_annotations(
+        self, stub_hsi_no_annotations, stub_label_names_excel
+    ):
+        """Verify that label_names is not loaded when no annotations are provided."""
+        hsi = HSIMars(hdr_path=str(stub_hsi_no_annotations.hdr_path))
+        ann = hsi.get_annotations()
+
+        # Should return None when no annotations
+        assert ann is None
 
 
 class TestHSIMarsDataMethod:
