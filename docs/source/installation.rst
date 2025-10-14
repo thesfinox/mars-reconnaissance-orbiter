@@ -18,7 +18,7 @@ Installation Methods
 
 We provide two main installation methods: using ``uv`` (recommended) or using ``pip`` (traditional).
 
-Using uv (Recommended)
+Using uv (recommended)
 ~~~~~~~~~~~~~~~~~~~~~~
 
 `uv <https://docs.astral.sh/uv/>`_ is a fast, modern Python package manager that simplifies dependency management. We recommend using ``uv`` for the best experience.

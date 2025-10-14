@@ -27,7 +27,7 @@ This package is designed to work with the dataset published by Xi _et al._ (2025
 
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
-  - [Using uv (Recommended)](#using-uv-recommended)
+  - [Using uv (recommended)](#using-uv-recommended)
   - [Using pip](#using-pip)
 - [Quick Start](#quick-start)
 - [Development Setup](#development-setup)
@@ -46,7 +46,7 @@ Before installing this package, ensure you have:
 
 ## Installation
 
-### Using uv (Recommended)
+### Using uv (recommended)
 
 [`uv`](https://docs.astral.sh/uv/) is a fast, modern Python package manager that simplifies dependency management. We recommend using `uv` for the best experience.
 
