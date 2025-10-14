@@ -238,17 +238,3 @@ Best Practices
 4. **Save plots programmatically**: Use the ``output`` parameter to save plots instead of displaying them interactively when processing multiple images.
 
 5. **Work with subsets**: For large datasets, consider analyzing specific regions of interest rather than processing the entire image at once.
-
-Next Steps
-----------
-
-* Explore the full :doc:`modules/modules` for detailed API documentation
-* Check out the :doc:`examples` page for more advanced use cases
-* Review the Jupyter notebook in ``notebooks/hsi_hymars.ipynb`` for interactive examples
-
-Need Help?
-----------
-
-* Check the :doc:`installation` guide for setup issues
-* See :doc:`contributing` to report bugs or request features
-* Contact: riccardo.finotello@cea.fr

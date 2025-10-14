@@ -430,11 +430,3 @@ Further Resources
 * See the :doc:`modules/modules` for complete API documentation
 * Check the GitHub repository for example notebooks
 * Join discussions on GitHub Issues
-
-Need Help?
-----------
-
-If you have questions or need assistance with advanced use cases:
-
-* Open an issue on GitHub
-* Contact: riccardo.finotello@cea.fr

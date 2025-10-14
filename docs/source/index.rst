@@ -86,6 +86,12 @@ Table of Contents
    quickstart
 
 .. toctree::
+   :maxdepth: 2
+   :caption: Tutorials
+
+   tutorial
+
+.. toctree::
    :maxdepth: 3
    :caption: API Reference
 

@@ -37,10 +37,22 @@ extensions = [
     "sphinx.ext.githubpages",
     "sphinx.ext.autodoc",
     "sphinx.ext.viewcode",
+    "nbsphinx",  # Jupyter notebook support
 ]
 
 # Autoclass settings
 autoclass_content = "both"
+
+# nbsphinx settings
+nbsphinx_execute = "never"  # Don't execute notebooks during build
+nbsphinx_allow_errors = False  # Raise errors if notebook has errors
+nbsphinx_timeout = 300  # Timeout for notebook execution (if enabled)
+nbsphinx_prolog = """
+.. note::
+   This page was generated from a Jupyter notebook. You can download the notebook
+   from the `notebooks/ directory <https://github.com/thesfinox/mars-reconnaissance-orbiter/tree/mars_data/notebooks>`_
+   in the repository.
+"""
 
 # Napoleon settings
 napoleon_google_docstring = False
