@@ -2,6 +2,7 @@
 
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Tests and Quality Checks](https://github.com/thesfinox/mars-reconnaissance-orbiter/actions/workflows/tests.yml/badge.svg)](https://github.com/thesfinox/mars-reconnaissance-orbiter/actions/workflows/tests.yml)
 
 A Python package for loading, processing, and visualizing hyperspectral imaging (HSI) data from the CRISM instrument aboard NASA’s Mars Reconnaissance Orbiter (MRO).
 
@@ -25,16 +26,27 @@ This package is designed to work with the dataset published by Xi _et al._ (2025
 
 ## Table of Contents
 
+- [Overview](#overview)
+- [Dataset](#dataset)
+- [Table of Contents](#table-of-contents)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
   - [Using uv (recommended)](#using-uv-recommended)
+    - [Step 1: Install uv](#step-1-install-uv)
+    - [Step 2: Install the package](#step-2-install-the-package)
   - [Using pip](#using-pip)
+    - [Step 1: Create a virtual environment](#step-1-create-a-virtual-environment)
+    - [Step 2: Install the package](#step-2-install-the-package-1)
 - [Quick Start](#quick-start)
+  - [Working with Annotations](#working-with-annotations)
 - [Development Setup](#development-setup)
 - [Usage Examples](#usage-examples)
+  - [Analysing Multiple Pixels](#analysing-multiple-pixels)
+  - [Generating Histograms](#generating-histograms)
+  - [Saving Plots](#saving-plots)
 - [Documentation](#documentation)
 - [Contributing](#contributing)
-- [License](#license)
+- [Licence](#licence)
 
 ## Prerequisites
 
