@@ -244,9 +244,11 @@ hsi.plot_histogram(
 
 For detailed API documentation and advanced usage:
 
-- **API Reference**: Check the docstrings in the source code
-- **Jupyter Notebook**: See [`notebooks/hsi_hymars.ipynb`](./notebooks/hsi_hymars.ipynb) for interactive examples
-- **Sphinx Documentation**: Run `make html` in the `docs/` directory
+- **API Reference**: Check the [API Reference](docs/build/html/index.html) after building with Sphinx
+- **Jupyter Notebooks**:
+  - [`notebooks/exploratory_data_analysis.ipynb`](./notebooks/exploratory_data_analysis.ipynb): an example of exploratory data analysis performed on a real dataset,
+  - [`notebooks/hsimars.ipynb`](./notebooks/hsimars.ipynb): a tutorial on how to use the `HSIMars` class and its methods.
+- **Sphinx Documentation**: Run `make html` in the `docs/` directory to build full documentation
 
 ## Contributing
 
