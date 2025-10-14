@@ -46,16 +46,10 @@ hsi
 
 Package Information
 -------------------
-Author: Riccardo Finotello
-Email: riccardo.finotello@cea.fr
-License: GNU General Public License v3 (GPLv3)
-URL: https://github.com/thesfinox/mars-reconnaissance-orbiter
-
-See Also
---------
-The package is based on the dataset accompanying the article:
-Xi et al. (2025), IEEE, DOI: 10.1109/LGRS.2025.3522631
-Dataset: https://www.scidb.cn/en/detail?dataSetId=4ff0774d45464f239a73f37796f7a786
+- **Author**: Riccardo Finotello
+- **Email**: riccardo.finotello@cea.fr
+- **License**: GNU General Public License v3 (GPLv3)
+- **URL**: https://github.com/thesfinox/mars-reconnaissance-orbiter
 """
 
 from .hsi import HSIMars

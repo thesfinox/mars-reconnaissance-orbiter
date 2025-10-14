@@ -11,8 +11,8 @@ This package provides intuitive tools for working with Martian hyperspectral dat
 
 - 📊 Load and process CRISM hyperspectral images in ENVI format
 - 🏷️ Handle ground truth annotations for machine learning applications
-- 🎨 Create false-color visualizations of spectral data
-- 📈 Plot and analyze spectral signatures with advanced processing
+- 🎨 Create false-colour visualizations of spectral data
+- 📈 Plot and analyse spectral signatures with advanced processing
 - 📉 Generate histograms for spectral band analysis
 - ⚡ Work efficiently with large datasets through lazy loading
 
@@ -205,7 +205,7 @@ make html
 
 ## Usage Examples
 
-### Analyzing Multiple Pixels
+### Analysing Multiple Pixels
 
 ```python
 # Plot average spectrum from a region
@@ -244,10 +244,10 @@ hsi.plot_histogram(
 
 For detailed API documentation and advanced usage:
 
-- **API Reference**: Check the [API Reference](docs/build/html/index.html) after building with Sphinx
+- **API Reference**: Check the [API Reference](https://github.com/thesfinox/mars-reconnaissance-orbiter) or build locally with Sphinx
 - **Jupyter Notebooks**:
-  - [`notebooks/exploratory_data_analysis.ipynb`](./notebooks/exploratory_data_analysis.ipynb): an example of exploratory data analysis performed on a real dataset,
-  - [`notebooks/hsimars.ipynb`](./notebooks/hsimars.ipynb): a tutorial on how to use the `HSIMars` class and its methods.
+  - [`notebooks/exploratory_data_analysis.ipynb`](./notebooks/exploratory_data_analysis.ipynb) - Comprehensive EDA tutorial for ML students
+  - [`notebooks/hsimars.ipynb`](./notebooks/hsimars.ipynb) - Basic usage examples and quick reference
 - **Sphinx Documentation**: Run `make html` in the `docs/` directory to build full documentation
 
 ## Contributing
@@ -264,6 +264,6 @@ We welcome contributions! To contribute:
 
 Please ensure your code follows the existing style and includes appropriate tests and documentation.
 
-## License
+## Licence
 
-This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the _GNU General Public License v3.0_ (see the [LICENSE](LICENSE) file for details).

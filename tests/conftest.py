@@ -5,8 +5,13 @@ This module provides stub/mock data fixtures for testing the HSIMars class
 without requiring real CRISM data files. All test data is generated in memory
 or in temporary directories, ensuring tests are fast, isolated, and reproducible.
 
-Author: Riccardo Finotello <riccardo.finotello@cea.fr>
-Maintainer: Riccardo Finotello <riccardo.finotello@cea.fr>
+**Author**: Riccardo Finotello <riccardo.finotello@cea.fr>
+
+**Maintainer**: Riccardo Finotello <riccardo.finotello@cea.fr>
+
+**Contributors**:
+
+    - Riccardo Finotello
 """
 
 from pathlib import Path
