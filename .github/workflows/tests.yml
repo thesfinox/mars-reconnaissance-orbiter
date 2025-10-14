@@ -73,7 +73,7 @@ jobs:
               continue-on-error: true
 
     docs:
-        name: Documentation Build Test
+        name: Documentation Build
         runs-on: ubuntu-latest
 
         steps:
