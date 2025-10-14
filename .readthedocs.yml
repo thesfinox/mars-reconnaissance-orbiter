@@ -14,7 +14,7 @@ build:
       # Install uv for faster dependency management
       - curl -LsSf https://astral.sh/uv/install.sh | sh
       - /home/docs/.local/bin/uv sync --group docs
-      - source .venv/bin/activate
+      - . .venv/bin/activate
 
 # Build documentation in the "docs/" directory with Sphinx
 sphinx:
