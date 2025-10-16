@@ -44,6 +44,8 @@ test:python3.12:
   before_script:
     - python -m pip install --upgrade pip
     - python -m pip install --group test .
+    - python -m pip uninstall opencv-python
+    - python -m pip install opencv-python-headless==4.11.0.86
   script:
     - pytest tests/ -v --cov=src/hsimars --cov-report=term-missing --cov-report=xml --junitxml=${REPORT_FILE}
   coverage: '/TOTAL.*\s+(\d+%)$/'
@@ -71,6 +73,8 @@ test:python3.11:
   before_script:
     - python -m pip install --upgrade pip
     - python -m pip install --group test .
+    - python -m pip uninstall opencv-python
+    - python -m pip install opencv-python-headless==4.11.0.86
   script:
     - pytest tests/ -v --cov=src/hsimars --cov-report=term-missing --cov-report=xml --junitxml=${REPORT_FILE}
   coverage: '/TOTAL.*\s+(\d+%)$/'
@@ -99,6 +103,8 @@ lint:
   before_script:
     - python -m pip install --upgrade pip
     - python -m pip install .
+    - python -m pip uninstall opencv-python
+    - python -m pip install opencv-python-headless==4.11.0.86
     - python -m pip install "ruff>=0.1.0"
   script:
     - echo "Checking code formatting with ruff..."
@@ -122,6 +128,8 @@ docs:
     - apt-get install -y pandoc
     - python -m pip install --upgrade pip
     - python -m pip install --group docs .
+    - python -m pip uninstall opencv-python
+    - python -m pip install opencv-python-headless==4.11.0.86
   script:
     - cd docs
     - sphinx-build -W -b html source build/html
@@ -149,6 +157,8 @@ build:
   before_script:
     - python -m pip install --upgrade pip
     - python -m pip install .
+    - python -m pip uninstall opencv-python
+    - python -m pip install opencv-python-headless==4.11.0.86
     - python -m pip install "build>=1.0.0" "twine>=4.0.0"
   script:
     - python -m build
@@ -177,6 +187,8 @@ pages:
     - apt-get install -y pandoc
     - python -m pip install --upgrade pip
     - python -m pip install --group docs .
+    - python -m pip uninstall opencv-python
+    - python -m pip install opencv-python-headless==4.11.0.86
   script:
     - sphinx-build -b html docs/source public
   artifacts:
