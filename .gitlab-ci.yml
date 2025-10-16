@@ -34,7 +34,7 @@ stages:
     - python -m ensurepip
     - python -m pip install uv
 
-# Test job with Python version matrix (3.12 and 3.13)
+# Test job with Python version matrix (3.12 and 3.11)
 test:python3.12:
   extends: .base_job
   stage: test
@@ -60,10 +60,10 @@ test:python3.12:
     - if: '$CI_PIPELINE_SOURCE == "push"'
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
-test:python3.13:
+test:python3.11:
   extends: .base_job
   stage: test
-  image: python:3.13
+  image: python:3.11
   tags:
     - python
   script:
@@ -136,7 +136,7 @@ build:
     - python
   needs:
     - job: test:python3.12
-    - job: test:python3.13
+    - job: test:python3.11
     - job: lint
       optional: true
     - job: docs
@@ -186,7 +186,7 @@ status:
     - python
   needs:
     - job: test:python3.12
-    - job: test:python3.13
+    - job: test:python3.11
     - job: lint
       optional: true
     - job: docs
@@ -200,7 +200,7 @@ status:
       echo ""
       echo "Jobs executed:"
       echo "  - Tests (Python 3.12): Passed"
-      echo "  - Tests (Python 3.13): Passed"
+      echo "  - Tests (Python 3.11): Passed"
       echo "  - Lint: Completed"
       echo "  - Docs: Passed"
       echo "  - Build: Passed"
