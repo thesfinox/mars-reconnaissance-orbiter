@@ -3,8 +3,8 @@
 # Runs tests, linting, docs build, and package build
 
 variables:
-  # uv cache configuration
-  UV_CACHE_DIR: .cache/uv
+  # pip cache configuration
+  PIP_CACHE_DIR: .cache/pip
   # Artifact paths
   COVERAGE_FILE: coverage.xml
   REPORT_FILE: report.xml
@@ -18,21 +18,21 @@ stages:
   - build
   - status
 
-# Cache configuration for uv
-.uv_cache:
+# Cache configuration for pip
+.pip_cache:
   cache:
     key:
       files:
-        - uv.lock
+        - pyproject.toml
     paths:
-      - .cache/uv
+      - .cache/pip
 
-# Base configuration for jobs using uv
+# Base configuration for jobs using pip
 .base_job:
-  extends: .uv_cache
+  extends: .pip_cache
   before_script:
-    - python -m ensurepip
-    - python -m pip install uv
+    - python -m pip install --upgrade pip
+    - python -m pip install .
 
 # Test job with Python version matrix (3.12 and 3.11)
 test:python3.12:
@@ -41,9 +41,11 @@ test:python3.12:
   image: python:3.12
   tags:
     - python
+  before_script:
+    - python -m pip install --upgrade pip
+    - python -m pip install --group test .
   script:
-    - uv sync --group test
-    - uv run pytest tests/ -v --cov=src/hsimars --cov-report=term-missing --cov-report=xml --junitxml=${REPORT_FILE}
+    - pytest tests/ -v --cov=src/hsimars --cov-report=term-missing --cov-report=xml --junitxml=${REPORT_FILE}
   coverage: '/TOTAL.*\s+(\d+%)$/'
   artifacts:
     when: always
@@ -66,9 +68,11 @@ test:python3.11:
   image: python:3.11
   tags:
     - python
+  before_script:
+    - python -m pip install --upgrade pip
+    - python -m pip install --group test .
   script:
-    - uv sync --group test
-    - uv run pytest tests/ -v --cov=src/hsimars --cov-report=term-missing --cov-report=xml --junitxml=${REPORT_FILE}
+    - pytest tests/ -v --cov=src/hsimars --cov-report=term-missing --cov-report=xml --junitxml=${REPORT_FILE}
   coverage: '/TOTAL.*\s+(\d+%)$/'
   artifacts:
     when: always
@@ -92,12 +96,15 @@ lint:
   image: python:3.12
   tags:
     - python
+  before_script:
+    - python -m pip install --upgrade pip
+    - python -m pip install .
+    - python -m pip install "ruff>=0.1.0"
   script:
-    - uv sync --group dev
     - echo "Checking code formatting with ruff..."
-    - uv run ruff check src/ tests/ || echo "⚠️  Ruff check found issues (continuing)"
+    - ruff check src/ tests/ || echo "⚠️  Ruff check found issues (continuing)"
     - echo "Checking code style with ruff format..."
-    - uv run ruff format --check src/ tests/ || echo "⚠️  Ruff format found issues (continuing)"
+    - ruff format --check src/ tests/ || echo "⚠️  Ruff format found issues (continuing)"
   allow_failure: true
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push"'
@@ -113,12 +120,11 @@ docs:
   before_script:
     - apt-get update
     - apt-get install -y pandoc
-    - python -m ensurepip
-    - python -m pip install uv
+    - python -m pip install --upgrade pip
+    - python -m pip install --group docs .
   script:
-    - uv sync --group docs
     - cd docs
-    - uv run sphinx-build -W -b html source build/html
+    - sphinx-build -W -b html source build/html
   artifacts:
     expire_in: 7 days
     paths:
@@ -140,11 +146,14 @@ build:
     - job: lint
       optional: true
     - job: docs
+  before_script:
+    - python -m pip install --upgrade pip
+    - python -m pip install .
+    - python -m pip install "build>=1.0.0" "twine>=4.0.0"
   script:
-    - uv sync --group build
-    - uv build
+    - python -m build
     - echo "Checking distribution with twine..."
-    - uv run twine check dist/* || echo "⚠️  Twine check found issues (continuing)"
+    - twine check dist/* || echo "⚠️  Twine check found issues (continuing)"
   artifacts:
     expire_in: 7 days
     paths:
@@ -166,11 +175,10 @@ pages:
   before_script:
     - apt-get update
     - apt-get install -y pandoc
-    - python -m ensurepip
-    - python -m pip install uv
+    - python -m pip install --upgrade pip
+    - python -m pip install --group docs .
   script:
-    - uv sync --group docs
-    - uv run sphinx-build -b html docs/source public
+    - sphinx-build -b html docs/source public
   artifacts:
     paths:
       - public
