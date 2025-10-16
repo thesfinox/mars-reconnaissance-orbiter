@@ -294,7 +294,8 @@ class HSIMars:
         good_cols = mask_channels.sum(axis=0) > 0
         img_memmap = img_memmap[good_rows, :][:, good_cols]
 
-        # Find and remove any remaining bad channels that still contain ignore values
+        # Find and remove any remaining bad channels that still contain
+        # ignore values
         mask = img_memmap == ignore_value
         idx = np.unique(np.argwhere(mask)[..., 2])
         ch = np.ones((img_memmap.shape[2],), dtype="bool")
