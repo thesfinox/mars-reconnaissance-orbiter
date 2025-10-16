@@ -44,7 +44,7 @@ test:python3.12:
   before_script:
     - python -m pip install --upgrade pip
     - python -m pip install --group test .
-    - python -m pip uninstall opencv-python
+    - python -m pip uninstall -y opencv-python
     - python -m pip install "opencv-python-headless==4.11.0.86"
   script:
     - pytest tests/ -v --cov=src/hsimars --cov-report=term-missing --cov-report=xml --junitxml=${REPORT_FILE}
@@ -73,7 +73,7 @@ test:python3.11:
   before_script:
     - python -m pip install --upgrade pip
     - python -m pip install --group test .
-    - python -m pip uninstall opencv-python
+    - python -m pip uninstall -y opencv-python
     - python -m pip install "opencv-python-headless==4.11.0.86"
   script:
     - pytest tests/ -v --cov=src/hsimars --cov-report=term-missing --cov-report=xml --junitxml=${REPORT_FILE}
@@ -102,7 +102,7 @@ lint:
     - python
   before_script:
     - python -m pip install --upgrade pip
-    - python -m pip uninstall opencv-python
+    - python -m pip uninstall -y opencv-python
     - python -m pip install "opencv-python-headless==4.11.0.86" "ruff>=0.1.0"
   script:
     - echo "Checking code formatting with ruff..."
@@ -126,7 +126,7 @@ docs:
     - apt-get install -y pandoc
     - python -m pip install --upgrade pip
     - python -m pip install --group docs .
-    - python -m pip uninstall opencv-python
+    - python -m pip uninstall -y opencv-python
     - python -m pip install "opencv-python-headless==4.11.0.86"
   script:
     - cd docs
@@ -154,7 +154,7 @@ build:
     - job: docs
   before_script:
     - python -m pip install --upgrade pip
-    - python -m pip uninstall opencv-python
+    - python -m pip uninstall -y opencv-python
     - python -m pip install "opencv-python-headless==4.11.0.86" "build>=1.0.0" "twine>=4.0.0"
   script:
     - python -m build
@@ -183,7 +183,7 @@ pages:
     - apt-get install -y pandoc
     - python -m pip install --upgrade pip
     - python -m pip install --group docs .
-    - python -m pip uninstall opencv-python
+    - python -m pip uninstall -y opencv-python
     - python -m pip install "opencv-python-headless==4.11.0.86"
   script:
     - sphinx-build -b html docs/source public
