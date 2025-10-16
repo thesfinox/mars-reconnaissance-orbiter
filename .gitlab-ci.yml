@@ -31,7 +31,6 @@ stages:
 .base_job:
   extends: .pip_cache
   before_script:
-    - python -m pip ensurepip
     - python -m pip install --upgrade pip
     - python -m pip install .
 
@@ -43,7 +42,6 @@ test:python3.12:
   tags:
     - python
   before_script:
-    - python -m pip ensurepip
     - python -m pip install --upgrade pip
     - python -m pip install --group test .
     - python -m pip uninstall opencv-python
@@ -73,7 +71,6 @@ test:python3.11:
   tags:
     - python
   before_script:
-    - python -m pip ensurepip
     - python -m pip install --upgrade pip
     - python -m pip install --group test .
     - python -m pip uninstall opencv-python
@@ -104,7 +101,6 @@ lint:
   tags:
     - python
   before_script:
-    - python -m pip ensurepip
     - python -m pip install --upgrade pip
     - python -m pip uninstall opencv-python
     - python -m pip install "opencv-python-headless==4.11.0.86" "ruff>=0.1.0"
@@ -128,7 +124,6 @@ docs:
   before_script:
     - apt-get update
     - apt-get install -y pandoc
-    - python -m pip ensurepip
     - python -m pip install --upgrade pip
     - python -m pip install --group docs .
     - python -m pip uninstall opencv-python
@@ -158,7 +153,6 @@ build:
       optional: true
     - job: docs
   before_script:
-    - python -m pip ensurepip
     - python -m pip install --upgrade pip
     - python -m pip uninstall opencv-python
     - python -m pip install "opencv-python-headless==4.11.0.86" "build>=1.0.0" "twine>=4.0.0"
@@ -187,7 +181,6 @@ pages:
   before_script:
     - apt-get update
     - apt-get install -y pandoc
-    - python -m pip ensurepip
     - python -m pip install --upgrade pip
     - python -m pip install --group docs .
     - python -m pip uninstall opencv-python
