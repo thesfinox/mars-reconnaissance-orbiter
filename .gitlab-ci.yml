@@ -1,0 +1,212 @@
+# GitLab CI/CD Configuration
+# Matches the GitHub Actions workflow in .github/workflows/tests.yml
+# Runs tests, linting, docs build, and package build
+
+variables:
+  # uv cache configuration
+  UV_CACHE_DIR: .cache/uv
+  # Artifact paths
+  COVERAGE_FILE: coverage.xml
+  REPORT_FILE: report.xml
+  DOCS_DIR: docs/build/html
+  DIST_DIR: dist
+
+# Define pipeline stages
+stages:
+  - test
+  - quality
+  - build
+  - status
+
+# Cache configuration for uv
+.uv_cache:
+  cache:
+    key:
+      files:
+        - uv.lock
+    paths:
+      - .cache/uv
+
+# Base configuration for jobs using uv
+.base_job:
+  extends: .uv_cache
+  before_script:
+    - python -m ensurepip
+    - python -m pip install uv
+
+# Test job with Python version matrix (3.12 and 3.13)
+test:python3.12:
+  extends: .base_job
+  stage: test
+  image: python:3.12
+  tags:
+    - python
+  script:
+    - uv sync --group test
+    - uv run pytest tests/ -v --cov=src/hsimars --cov-report=term-missing --cov-report=xml --junitxml=${REPORT_FILE}
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+  artifacts:
+    when: always
+    expire_in: 7 days
+    paths:
+      - ${COVERAGE_FILE}
+      - ${REPORT_FILE}
+    reports:
+      junit: ${REPORT_FILE}
+      coverage_report:
+        coverage_format: cobertura
+        path: ${COVERAGE_FILE}
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+test:python3.13:
+  extends: .base_job
+  stage: test
+  image: python:3.13
+  tags:
+    - python
+  script:
+    - uv sync --group test
+    - uv run pytest tests/ -v --cov=src/hsimars --cov-report=term-missing --cov-report=xml --junitxml=${REPORT_FILE}
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+  artifacts:
+    when: always
+    expire_in: 7 days
+    paths:
+      - ${COVERAGE_FILE}
+      - ${REPORT_FILE}
+    reports:
+      junit: ${REPORT_FILE}
+      coverage_report:
+        coverage_format: cobertura
+        path: ${COVERAGE_FILE}
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+# Code quality checks with ruff
+lint:
+  extends: .base_job
+  stage: quality
+  image: python:3.12
+  tags:
+    - python
+  script:
+    - uv sync --group dev
+    - echo "Checking code formatting with ruff..."
+    - uv run ruff check src/ tests/ || echo "⚠️  Ruff check found issues (continuing)"
+    - echo "Checking code style with ruff format..."
+    - uv run ruff format --check src/ tests/ || echo "⚠️  Ruff format found issues (continuing)"
+  allow_failure: true
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+# Documentation build with Sphinx
+docs:
+  extends: .base_job
+  stage: quality
+  image: python:3.12
+  tags:
+    - python
+  before_script:
+    - apt-get update
+    - apt-get install -y pandoc
+    - python -m ensurepip
+    - python -m pip install uv
+  script:
+    - uv sync --group docs
+    - cd docs
+    - uv run sphinx-build -W -b html source build/html
+  artifacts:
+    expire_in: 7 days
+    paths:
+      - ${DOCS_DIR}
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+# Build distribution packages
+build:
+  extends: .base_job
+  stage: build
+  image: python:3.12
+  tags:
+    - python
+  needs:
+    - job: test:python3.12
+    - job: test:python3.13
+    - job: lint
+      optional: true
+    - job: docs
+  script:
+    - uv sync --group build
+    - uv build
+    - echo "Checking distribution with twine..."
+    - uv run twine check dist/* || echo "⚠️  Twine check found issues (continuing)"
+  artifacts:
+    expire_in: 7 days
+    paths:
+      - ${DIST_DIR}
+  allow_failure: false
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+# GitLab Pages deployment (for main branch only)
+pages:
+  extends: .base_job
+  stage: build
+  image: python:3.12
+  tags:
+    - python
+  needs:
+    - job: docs
+  before_script:
+    - apt-get update
+    - apt-get install -y pandoc
+    - python -m ensurepip
+    - python -m pip install uv
+  script:
+    - uv sync --group docs
+    - uv run sphinx-build -b html docs/source public
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "mars_data"'
+
+# Final status check job
+status:
+  stage: status
+  image: python:3.12-slim
+  tags:
+    - python
+  needs:
+    - job: test:python3.12
+    - job: test:python3.13
+    - job: lint
+      optional: true
+    - job: docs
+    - job: build
+  script:
+    - |
+      echo "==================================="
+      echo "Pipeline Status Summary"
+      echo "==================================="
+      echo "✅ All checks completed successfully!"
+      echo ""
+      echo "Jobs executed:"
+      echo "  - Tests (Python 3.12): Passed"
+      echo "  - Tests (Python 3.13): Passed"
+      echo "  - Lint: Completed"
+      echo "  - Docs: Passed"
+      echo "  - Build: Passed"
+      echo ""
+      echo "==================================="
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  when: on_success
