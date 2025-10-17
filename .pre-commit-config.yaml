@@ -2,7 +2,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: check-added-large-files
       - id: check-ast
@@ -37,18 +37,16 @@ repos:
       - id: rst-directive-colons
       - id: rst-inline-touching-normal
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.19.0
+    rev: v3.21.0
     hooks:
       - id: pyupgrade
         args: ["--py312-plus"]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.0
+    rev: v0.14.1
     hooks:
-      - id: ruff
-        types_or: [python, pyi]
+      - id: ruff-check
         args: ["--fix"]
       - id: ruff-format
-        types_or: [python, pyi]
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.19.3
     hooks:
@@ -57,3 +55,7 @@ repos:
     rev: v0.19.1
     hooks:
       - id: gitlint
+  - repo: https://github.com/albertas/deadcode
+    rev: 2.4.1
+    hooks:
+      - id: deadcode
