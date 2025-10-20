@@ -1,3 +1,4 @@
+---
 # GitLab CI/CD Configuration
 # Matches the GitHub Actions workflow in .github/workflows/tests.yml
 # Runs tests, linting, docs build, and package build
@@ -47,7 +48,10 @@ test:python3.12:
     - python -m pip uninstall -y opencv-python
     - python -m pip install "opencv-python-headless==4.11.0.86"
   script:
-    - pytest tests/ -v --cov=src/hsimars --cov-report=term-missing --cov-report=xml --junitxml=${REPORT_FILE}
+    - >
+      pytest tests/ -v --cov=src/hsimars
+      --cov-report=term-missing --cov-report=xml
+      --junitxml=${REPORT_FILE}
   coverage: '/TOTAL.*\s+(\d+%)$/'
   artifacts:
     when: always
@@ -76,7 +80,10 @@ test:python3.11:
     - python -m pip uninstall -y opencv-python
     - python -m pip install "opencv-python-headless==4.11.0.86"
   script:
-    - pytest tests/ -v --cov=src/hsimars --cov-report=term-missing --cov-report=xml --junitxml=${REPORT_FILE}
+    - >
+      pytest tests/ -v --cov=src/hsimars
+      --cov-report=term-missing --cov-report=xml
+      --junitxml=${REPORT_FILE}
   coverage: '/TOTAL.*\s+(\d+%)$/'
   artifacts:
     when: always
@@ -106,9 +113,13 @@ lint:
     - python -m pip install "opencv-python-headless==4.11.0.86" "ruff>=0.1.0"
   script:
     - echo "Checking code formatting with ruff..."
-    - ruff check src/ tests/ || echo "⚠️  Ruff check found issues (continuing)"
+    - >
+      ruff check src/ tests/ ||
+      echo "⚠️  Ruff check found issues (continuing)"
     - echo "Checking code style with ruff format..."
-    - ruff format --check src/ tests/ || echo "⚠️  Ruff format found issues (continuing)"
+    - >
+      ruff format --check src/ tests/ ||
+      echo "⚠️  Ruff format found issues (continuing)"
   allow_failure: true
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push"'
@@ -139,6 +150,30 @@ docs:
     - if: '$CI_PIPELINE_SOURCE == "push"'
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
+# Check documentation coverage
+check-docs:
+  extends: .base_job
+  stage: quality
+  image: python:3.12
+  tags:
+    - python
+  before_script:
+    - python -m pip install --upgrade pip
+    - python -m pip install opencv-python-headless==4.11.0.86
+    - python -m pip install .
+  script:
+    - check-docs hsimars --out docs_report.txt
+    - cat docs_report.txt
+  artifacts:
+    when: always
+    expire_in: 7 days
+    paths:
+      - docs_report.txt
+  allow_failure: false
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
 # Build distribution packages
 build:
   extends: .base_job
@@ -152,10 +187,13 @@ build:
     - job: lint
       optional: true
     - job: docs
+    - job: check-docs
   before_script:
     - python -m pip install --upgrade pip
     - python -m pip uninstall -y opencv-python
-    - python -m pip install "opencv-python-headless==4.11.0.86" "build>=1.0.0" "twine>=4.0.0"
+    - >
+      python -m pip install "opencv-python-headless==4.11.0.86"
+      "build>=1.0.0" "twine>=4.0.0"
   script:
     - python -m build
     - echo "Checking distribution with twine..."
@@ -206,6 +244,7 @@ status:
     - job: lint
       optional: true
     - job: docs
+    - job: check-docs
     - job: build
   script:
     - |
@@ -219,6 +258,7 @@ status:
       echo "  - Tests (Python 3.11): Passed"
       echo "  - Lint: Completed"
       echo "  - Docs: Passed"
+      echo "  - Check Docs: Passed"
       echo "  - Build: Passed"
       echo ""
       echo "==================================="

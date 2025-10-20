@@ -41,12 +41,17 @@ dependencies = [
 [dependency-groups]
 test = ["pytest>=7.4.0", "pytest-cov>=4.1.0"]
 docs = [
+    "code-docs @ git+https://gitlab.deeplab.intra.cea.fr/tools-and-scripts/code-docs.git",
     "nbsphinx>=0.9.7",
     "pandoc>=2.4",
     "sphinx>=6.2.1",
     "sphinx-rtd-theme>=1.2.0",
 ]
-dev = ["pre-commit>=4.2.0", "ruff>=0.1.0"]
+dev = [
+    "pre-commit>=4.2.0",
+    "ruff>=0.1.0",
+    "yamllint>=1.37.1",
+]
 build = ["build>=1.0.0", "twine>=4.0.0"]
 
 [project.urls]
@@ -114,3 +119,6 @@ docstring-code-line-length = "dynamic"
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+
+[tool.uv.sources]
+code-docs = { git = "https://gitlab.deeplab.intra.cea.fr/tools-and-scripts/code-docs.git" }

@@ -29,7 +29,7 @@ You can contribute in several ways:
 
 ### 1. Fork the Repository
 
-Visit the [GitHub repository](https://github.com/thesfinox/mars-reconnaissance-orbiter) and click the "Fork" button in the top right.
+Visit the [GitHub repository](https://github.com/thesfinox/mars-reconnaissance-orbiter) and click the “Fork” button in the top right.
 
 ### 2. Clone Your Fork
 
@@ -178,7 +178,7 @@ git commit -m "Add feature: descriptive message"
 
 **Writing Good Commit Messages:**
 
-- Use present tense ("Add feature" not "Added feature")
+- Use present tense (“Add feature” not “Added feature”)
 - Keep first line under 50 characters
 - Capitalize the first letter
 - No period at the end of the summary
@@ -209,7 +209,7 @@ git push origin feature/your-feature-name
 Then:
 
 1. Go to your fork on GitHub
-2. Click "Pull Request" button
+2. Click “Pull Request” button
 3. Select your branch and describe your changes
 4. Submit the pull request
 
@@ -531,7 +531,7 @@ When requesting a feature, include:
 
 Use appropriate labels:
 
-- `bug` - Something isn't working
+- `bug` - Something isn’t working
 - `enhancement` - New feature or request
 - `documentation` - Documentation improvements
 - `question` - Questions about usage
@@ -545,7 +545,7 @@ Use appropriate labels:
 - ✅ Use welcoming and inclusive language
 - ✅ Respect differing viewpoints and experiences
 - ✅ Accept constructive criticism gracefully
-- ✅ Focus on what's best for the community
+- ✅ Focus on what’s best for the community
 - ✅ Show empathy towards other contributors
 
 ### Communication

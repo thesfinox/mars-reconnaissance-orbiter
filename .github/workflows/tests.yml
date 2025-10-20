@@ -110,10 +110,43 @@ jobs:
           path: docs/build/html/
           retention-days: 7
 
+  check-docs:
+    name: Documentation Coverage Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install package
+        run: |
+          uv sync
+
+      - name: Run check-docs
+        run: |
+          uv run check-docs hsimars --out docs_report.txt
+          cat docs_report.txt
+
+      - name: Upload documentation coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: documentation-coverage-report
+          path: docs_report.txt
+          retention-days: 7
+
   build:
     name: Build Distribution
     runs-on: ubuntu-latest
-    needs: [test, lint, docs]
+    needs: [test, lint, docs, check-docs]
 
     steps:
       - name: Checkout repository
@@ -150,7 +183,7 @@ jobs:
   status:
     name: All Checks Passed
     runs-on: ubuntu-latest
-    needs: [test, lint, docs, build]
+    needs: [test, lint, docs, check-docs, build]
     if: always()
 
     steps:
@@ -159,6 +192,7 @@ jobs:
           if [ "${{ needs.test.result }}" == "success" ] && \
              [ "${{ needs.lint.result }}" == "success" ] && \
              [ "${{ needs.docs.result }}" == "success" ] && \
+             [ "${{ needs.check-docs.result }}" == "success" ] && \
              [ "${{ needs.build.result }}" == "success" ]; then
             echo "✅ All checks passed!"
             exit 0
@@ -167,6 +201,7 @@ jobs:
             echo "  - Tests: ${{ needs.test.result }}"
             echo "  - Lint: ${{ needs.lint.result }}"
             echo "  - Docs: ${{ needs.docs.result }}"
+            echo "  - Check Docs: ${{ needs.check-docs.result }}"
             echo "  - Build: ${{ needs.build.result }}"
             exit 1
           fi
