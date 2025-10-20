@@ -1,6 +1,6 @@
 # Contributing Guide
 
-We welcome contributions to the HSI Mars project! This guide will help you get started.
+Contributions to the HSI Mars project are welcome. This guide explains how to contribute.
 
 ## Table of Contents
 
@@ -16,14 +16,14 @@ We welcome contributions to the HSI Mars project! This guide will help you get s
 
 ## Ways to Contribute
 
-There are many ways to contribute to this project:
+You can contribute in several ways:
 
-- 🐛 **Report bugs** - Help us identify and fix issues
-- 💡 **Suggest new features** - Share ideas for improvements
-- 📝 **Improve documentation** - Make our docs clearer and more comprehensive
-- 🧪 **Add tests** - Increase code coverage and reliability
-- 💻 **Submit code improvements** - Fix bugs or implement features
-- 📊 **Share example analyses** - Contribute notebooks or examples
+- 🐛 **Report bugs** - Help identify and fix issues
+- 💡 **Suggest features** - Share ideas for improvements
+- 📝 **Improve documentation** - Make the docs clearer
+- 🧪 **Add tests** - Increase code coverage
+- 💻 **Submit code** - Fix bugs or add features
+- 📊 **Share examples** - Contribute notebooks or analyses
 
 ## Getting Started
 
@@ -65,13 +65,13 @@ source .venv/bin/activate  # On Linux/macOS
 pip install -e ".[dev,test,docs]"
 ```
 
-### 4. Install Pre-commit Hooks (Optional but Recommended)
+### 4. Install Pre-commit Hooks (Optional)
 
 ```bash
 pre-commit install
 ```
 
-This ensures code quality checks run automatically before each commit.
+This runs code quality checks automatically before each commit.
 
 ## Development Workflow
 
@@ -92,12 +92,12 @@ Use descriptive branch names:
 
 Follow these guidelines:
 
-- ✅ Write clear, descriptive commit messages
+- ✅ Write clear commit messages
 - ✅ Add docstrings to all functions and classes
 - ✅ Follow PEP 8 style guidelines
-- ✅ Add type hints where appropriate
-- ✅ Keep changes focused and atomic
-- ✅ Update documentation as needed
+- ✅ Add type hints where needed
+- ✅ Keep changes focused
+- ✅ Update documentation
 
 ### 3. Write Tests
 
@@ -110,7 +110,7 @@ from hsimars import HSIMars
 
 
 def test_new_feature_produces_expected_output():
-    """Verify that new feature works correctly."""
+    """Check that new feature works correctly."""
     # Arrange
     hsi = HSIMars(hdr_path="data/test.hdr")
 

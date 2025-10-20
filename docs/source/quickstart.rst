@@ -1,7 +1,7 @@
 Quick Start Guide
 =================
 
-This guide will help you get started with the HSI Mars package quickly.
+This guide helps you get started with the HSI Mars package.
 
 Basic Usage
 -----------
@@ -36,11 +36,11 @@ The simplest use case is loading and displaying a hyperspectral image:
 Displaying Images
 ~~~~~~~~~~~~~~~~~
 
-Display the false-color visualization:
+Display the false-colour visualisation:
 
 .. code-block:: python
 
-   # Display the hyperspectral image as false-color RGB
+   # Display the hyperspectral image as false-colour RGB
    hsi.display_hsi()
 
    # This opens an interactive OpenCV window
@@ -72,7 +72,7 @@ Loading Annotations
        print(f"Annotation shape: {ann_data.shape}")
        print(f"Number of classes: {len(np.unique(ann_data.labels))}")
 
-Visualizing Annotations
+Visualising Annotations
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
@@ -83,8 +83,8 @@ Visualizing Annotations
    # Display combined view: image, annotations, and overlay
    hsi.display()
    # This shows three panels side by side:
-   # 1. False-color image
-   # 2. Color-coded annotations
+   # 1. False-colour image
+   # 2. Colour-coded annotations
    # 3. Semi-transparent overlay
 
 Spectral Analysis
@@ -111,7 +111,7 @@ Apply convex hull removal and show spectral bands:
 
 .. code-block:: python
 
-   # Plot with convex hull removal (continuum normalization)
+   # Plot with convex hull removal (continuum normalisation)
    hsi.plot_spectra(
        px=[100, 200],
        convex_hull=True,
@@ -177,12 +177,12 @@ Here's a complete workflow combining multiple operations:
        print(f"Number of classes: {len(unique_labels)}")
        print(f"Class labels: {unique_labels}")
 
-   # Visualize
+   # Visualise
    hsi.display()  # Interactive display
 
-   # Analyze specific region
+   # Analyse specific region
    center_pixel = [img_data.height // 2, img_data.width // 2]
-   print(f"\nAnalyzing pixel at {center_pixel}")
+   print(f"\nAnalysing pixel at {center_pixel}")
 
    hsi.plot_spectra(
        px=center_pixel,
@@ -202,14 +202,14 @@ Here's a complete workflow combining multiple operations:
 Memory Considerations
 ---------------------
 
-The HSI Mars package uses lazy loading to manage memory efficiently:
+The HSI Mars package uses lazy loading for memory efficiency:
 
 .. code-block:: python
 
    # Create the object (no data loaded yet)
    hsi = HSIMars(hdr_path="path/to/large_image.hdr")
 
-   # Data is loaded only when first accessed
+   # Data loads only when first accessed
    img_data = hsi.get_img()  # Loads and caches data
 
    # Subsequent calls use cached data (no disk I/O)
@@ -222,9 +222,9 @@ The HSI Mars package uses lazy loading to manage memory efficiently:
 Best Practices
 --------------
 
-1. **Use context-appropriate coordinates**: Remember that pixel coordinates are in ``(row, column)`` format, which corresponds to ``(y, x)`` in image coordinates.
+1. **Use context-appropriate coordinates**: Pixel coordinates are in ``(row, column)`` format, which corresponds to ``(y, x)`` in image coordinates.
 
-2. **Check for annotations**: Always verify that annotations exist before trying to display them:
+2. **Check for annotations**: Verify that annotations exist before trying to display them:
 
    .. code-block:: python
 

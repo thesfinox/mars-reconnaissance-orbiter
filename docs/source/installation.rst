@@ -1,7 +1,7 @@
 Installation Guide
 ==================
 
-This guide will walk you through the installation process for the HSI Mars package.
+This guide explains the installation process for the HSI Mars package.
 
 Prerequisites
 -------------
@@ -16,12 +16,12 @@ Before installing this package, ensure you have:
 Installation Methods
 --------------------
 
-We provide two main installation methods: using ``uv`` (recommended) or using ``pip`` (traditional).
+Two main installation methods: using ``uv`` (recommended) or using ``pip`` (traditional).
 
 Using uv (recommended)
 ~~~~~~~~~~~~~~~~~~~~~~
 
-`uv <https://docs.astral.sh/uv/>`_ is a fast, modern Python package manager that simplifies dependency management. We recommend using ``uv`` for the best experience.
+`uv <https://docs.astral.sh/uv/>`_ is a fast Python package manager.
 
 Step 1: Install uv
 ^^^^^^^^^^^^^^^^^^
@@ -189,7 +189,7 @@ If you encounter dependency conflicts:
 Getting Help
 ~~~~~~~~~~~~
 
-If you continue to experience issues:
+If you continue to have issues:
 
 * Check the `GitHub Issues <https://github.com/thesfinox/mars-reconnaissance-orbiter/issues>`_
 * Open a new issue with details about your system and the error message
@@ -198,4 +198,4 @@ If you continue to experience issues:
 Next Steps
 ----------
 
-Now that you have installed the package, proceed to the :doc:`quickstart` guide to learn how to use it!
+Now that you have installed the package, see the :doc:`quickstart` guide to learn how to use it!

@@ -2,16 +2,15 @@
 HSI Mars: Hyperspectral Image Analysis for Mars Reconnaissance Orbiter Data
 ============================================================================
 
-This package provides tools for loading, processing, and visualizing hyperspectral
+This package provides tools for loading, processing, and visualising hyperspectral
 imaging (HSI) data from the CRISM instrument aboard NASA's Mars Reconnaissance
-Orbiter (MRO). It supports working with ENVI format spectral data and associated
-ground truth annotations.
+Orbiter (MRO). It works with ENVI format spectral data and ground truth annotations.
 
 Main Features
 -------------
 * Load and process CRISM hyperspectral images in ENVI format
-* Handle ground truth annotations for supervised learning tasks
-* Visualize false-color images and spectral signatures
+* Handle ground truth annotations for supervised learning
+* Visualise false-colour images and spectral signatures
 * Plot spectral profiles with optional convex hull removal
 * Generate histograms for spectral band analysis
 * Memory-efficient lazy loading for large datasets
@@ -30,7 +29,7 @@ Quick Start
 ... )
 >>> img_data, ann_data = hsi.data()
 >>>
->>> # Visualize
+>>> # Visualise
 >>> hsi.display()  # Interactive display
 >>> hsi.plot_spectra(px=[100, 200], convex_hull=True, bands=True)
 
@@ -42,13 +41,13 @@ HSIMars
 Modules
 -------
 hsi
-    Core module containing the HSIMars class and processing functions.
+    Core module with the HSIMars class and processing functions.
 
 Package Information
 -------------------
 - **Author**: Riccardo Finotello
 - **Email**: riccardo.finotello@cea.fr
-- **License**: GNU General Public License v3 (GPLv3)
+- **Licence**: GNU General Public License v3 (GPLv3)
 - **URL**: https://github.com/thesfinox/mars-reconnaissance-orbiter
 """
 

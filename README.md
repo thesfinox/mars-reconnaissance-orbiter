@@ -4,18 +4,18 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Tests and Quality Checks](https://github.com/thesfinox/mars-reconnaissance-orbiter/actions/workflows/tests.yml/badge.svg)](https://github.com/thesfinox/mars-reconnaissance-orbiter/actions/workflows/tests.yml)
 
-A Python package for loading, processing, and visualizing hyperspectral imaging (HSI) data from the CRISM instrument aboard NASA’s Mars Reconnaissance Orbiter (MRO).
+A Python package for loading, processing, and visualising hyperspectral imaging (HSI) data from the CRISM instrument aboard NASA's Mars Reconnaissance Orbiter (MRO).
 
 ## Overview
 
-This package provides intuitive tools for working with Martian hyperspectral data, enabling researchers to:
+This package provides tools for working with Martian hyperspectral data:
 
 - 📊 Load and process CRISM hyperspectral images in ENVI format
-- 🏷️ Handle ground truth annotations for machine learning applications
-- 🎨 Create false-colour visualizations of spectral data
-- 📈 Plot and analyse spectral signatures with advanced processing
+- 🏷️ Handle ground truth annotations for machine learning
+- 🎨 Create false-colour visualisations of spectral data
+- 📈 Plot and analyse spectral signatures
 - 📉 Generate histograms for spectral band analysis
-- ⚡ Work efficiently with large datasets through lazy loading
+- ⚡ Work with large datasets through lazy loading
 
 ## Dataset
 
@@ -60,7 +60,7 @@ Before installing this package, ensure you have:
 
 ### Using uv (recommended)
 
-[`uv`](https://docs.astral.sh/uv/) is a fast, modern Python package manager that simplifies dependency management. We recommend using `uv` for the best experience.
+[`uv`](https://docs.astral.sh/uv/) is a fast Python package manager. We recommend it for simpler dependency management.
 
 #### Step 1: Install uv
 
@@ -149,7 +149,7 @@ pip install -e ".[dev]"
 
 ## Quick Start
 
-Here’s a simple example to get you started:
+A simple example:
 
 ```python
 from hsimars import HSIMars
@@ -254,27 +254,27 @@ hsi.plot_histogram(
 
 ## Documentation
 
-For detailed API documentation and advanced usage:
+Detailed API documentation and usage examples:
 
-- **API Reference**: Check the [API Reference](https://github.com/thesfinox/mars-reconnaissance-orbiter) or build locally with Sphinx
+- **API Reference**: See the [API Reference](https://github.com/thesfinox/mars-reconnaissance-orbiter) or build locally with Sphinx
 - **Jupyter Notebooks**:
-  - [`notebooks/exploratory_data_analysis.ipynb`](./notebooks/exploratory_data_analysis.ipynb) - Comprehensive EDA tutorial for ML students
-  - [`notebooks/hsimars.ipynb`](./notebooks/hsimars.ipynb) - Basic usage examples and quick reference
-- **Sphinx Documentation**: Run `make html` in the `docs/` directory to build full documentation
+  - [`notebooks/exploratory_data_analysis.ipynb`](./notebooks/exploratory_data_analysis.ipynb) - EDA tutorial for ML students
+  - [`notebooks/hsimars.ipynb`](./notebooks/hsimars.ipynb) - Basic usage examples
+- **Sphinx Documentation**: Run `make html` in the `docs/` directory
 
 ## Contributing
 
-We welcome contributions! To contribute:
+Contributions are welcome. To contribute:
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+2. Create a feature branch (`git checkout -b feature/new-feature`)
 3. Make your changes
 4. Run tests (`pytest tests/`)
-5. Commit your changes (`git commit -m 'Add amazing feature'`)
-6. Push to your fork (`git push origin feature/amazing-feature`)
-7. Open a Pull Request
+5. Commit your changes (`git commit -m 'Add new feature'`)
+6. Push to your fork (`git push origin feature/new-feature`)
+7. Open a pull request
 
-Please ensure your code follows the existing style and includes appropriate tests and documentation.
+Ensure your code follows the existing style and includes tests and documentation.
 
 ## Licence
 

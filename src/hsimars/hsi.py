@@ -1,17 +1,15 @@
 """
 Open and manipulate hyperspectral images (HSI) from Mars Reconnaissance Orbiter.
 
-This module provides the `HSIMars` class for working with hyperspectral imaging data
-from the CRISM instrument aboard the Mars Reconnaissance Orbiter. It supports loading,
-processing, and visualizing HSI data along with their annotations.
+This module provides the `HSIMars` class for working with hyperspectral imaging data from the CRISM instrument aboard the Mars Reconnaissance Orbiter. It supports loading, processing, and visualising HSI data and their annotations.
 
 The module handles:
 - Loading ENVI format hyperspectral images (.hdr and .img files)
-- Processing and cleaning HSI data (removing bad bands, cropping, normalization)
+- Processing HSI data (removing bad bands, cropping, normalisation)
 - Loading and aligning ground truth annotations (.mat files)
-- Visualizing spectral data, false-color images, and annotations
+- Visualising spectral data, false-colour images, and annotations
 - Plotting spectra with optional convex hull removal
-- Generating histograms for specific spectral bands
+- Generating histograms for spectral bands
 
 **Author**: Riccardo Finotello <riccardo.finotello@cea.fr>
 
@@ -58,12 +56,9 @@ class HSIMars:
     """
     Load and manipulate hyperspectral images from Mars Reconnaissance Orbiter.
 
-    This class provides comprehensive functionality for working with CRISM
-    hyperspectral imaging data, including loading ENVI format images, processing
-    spectral data, handling ground truth annotations, and creating visualizations.
+    This class provides functionality for working with CRISM hyperspectral data: loading ENVI format images, processing spectral data, handling ground truth annotations, and creating visualisations.
 
-    The class implements lazy loading to optimize memory usage - data is only loaded
-    from disk when first accessed and then cached for subsequent operations.
+    The class uses lazy loading for memory efficiency - data loads from disk only when first accessed, then caches for later use.
 
     Attributes
     ----------
@@ -82,7 +77,9 @@ class HSIMars:
     ... )
 
     >>> # Load HSI data with annotations
-    >>> hsi = HSIMars(hdr_path="data/sample.hdr", annotations="data/labels.mat")
+    >>> hsi = HSIMars(
+    ...     hdr_path="data/sample.hdr", annotations="data/labels.mat"
+    ... )
     >>> img_data, ann_data = hsi.data()
     >>> hsi.display()  # Show image with overlaid annotations
 
@@ -91,8 +88,7 @@ class HSIMars:
 
     Notes
     -----
-    The ENVI .img file containing the actual hyperspectral data must be located
-    in the same directory as the .hdr header file.
+    The ENVI .img file containing the hyperspectral data must be in the same directory as the .hdr header file.
     """
 
     def __init__(
@@ -102,26 +98,21 @@ class HSIMars:
         label_names_path: str | Path | None = None,
     ):
         """
-        Initialize the HSIMars object with paths to data files.
+        Initialise the HSIMars object with paths to data files.
 
         Parameters
         ----------
         hdr_path : str | Path
-            Path to the ENVI header file (.hdr extension) containing metadata
-            about the hyperspectral image. The corresponding .img file with the
-            actual spectral data must be in the same directory.
+            Path to the ENVI header file (.hdr extension) with metadata about the hyperspectral image. The corresponding .img file with spectral data must be in the same directory.
         annotations : str | Path, optional
-            Path to the ground truth annotations file (.mat format). If None,
-            annotation-related methods will return None. Default is None.
+            Path to the ground truth annotations file (.mat format). If None, annotation methods return None. Default is None.
         label_names_path : str | Path, optional
-            Path to the Excel file containing label name mappings. If None,
-            the method will look for a file named ``data_description.xlsx``
-            in the same directory as the HDR file. Default is None.
+            Path to the Excel file with label name mappings. If None, looks for ``data_description.xlsx`` in the same directory as the HDR file. Default is None.
 
         Raises
         ------
         FileNotFoundError
-            If the header file does not exist at the specified path.
+            If the header file does not exist.
         FileNotFoundError
             If annotations path is provided but the file does not exist.
         FileNotFoundError
@@ -141,9 +132,7 @@ class HSIMars:
 
         Notes
         -----
-        The constructor only validates file paths - no data is loaded until
-        one of the get_* methods is called. This lazy loading approach
-        minimizes memory usage when working with large datasets.
+        The constructor validates file paths only - no data loads until a get_* method is called. This lazy loading reduces memory usage with large datasets.
         """
         self.hdr_path: Path = Path(hdr_path)
         if not self.hdr_path.exists():
@@ -177,15 +166,12 @@ class HSIMars:
         """
         Load the raw ENVI hyperspectral data file.
 
-        This method opens the ENVI format file and returns a file object that
-        provides access to the raw spectral data. The data is cached after the
-        first call to avoid redundant disk I/O operations.
+        This method opens the ENVI format file and returns a file object for accessing the raw spectral data. The data caches after the first call to avoid redundant disk I/O.
 
         Returns
         -------
         envi.BsqFile
-            ENVI file object providing access to the hyperspectral data. This
-            object supports memory-mapped access to efficiently handle large files.
+            ENVI file object for accessing the hyperspectral data. This object supports memory-mapped access for large files.
 
         Examples
         --------
@@ -195,9 +181,7 @@ class HSIMars:
 
         Notes
         -----
-        The actual spectral data is stored in a .img file that must be located
-        in the same directory as the .hdr file. The ENVI library automatically
-        locates and opens the corresponding .img file.
+        The spectral data is in a .img file that must be in the same directory as the .hdr file. The ENVI library automatically finds and opens the .img file.
         """
         if self._raw is None:
             self._raw = envi.open(self.hdr_path)
@@ -207,9 +191,7 @@ class HSIMars:
         """
         Load and process the hyperspectral image data.
 
-        This method loads the raw HSI data, performs preprocessing steps including
-        bad band removal, cropping of invalid pixels, and normalization. The result
-        is cached for efficient subsequent access.
+        This method loads the raw HSI data, performs preprocessing steps including bad band removal, cropping of invalid pixels, and normalization. The result is cached for efficient subsequent access.
 
         The preprocessing pipeline includes:
         1. Loading wavelength information and identifying bad bands
@@ -224,11 +206,9 @@ class HSIMars:
             A named tuple (HSIMarsImageData) containing the following attributes:
 
             - **hsi** : ndarray of shape (height, width, channels)
-                The processed hyperspectral image data as a 3D numpy array.
-                Data type is float32.
+                The processed hyperspectral image data as a 3D numpy array.  Data type is float32.
             - **wavelength** : ndarray of shape (channels,)
-                Array of wavelength values in nanometers corresponding to each
-                spectral channel.
+                Array of wavelength values in nanometers corresponding to each spectral channel.
             - **shape** : tuple of (height, width, channels)
                 Dimensions of the hyperspectral image.
             - **height** : int
@@ -255,11 +235,9 @@ class HSIMars:
 
         Notes
         -----
-        The method implements lazy evaluation - the image is only loaded and
-        processed on the first call. Subsequent calls return the cached result.
+        The method implements lazy evaluation - the image is only loaded and processed on the first call. Subsequent calls return the cached result.
 
-        The bad band list (bbl) from the ENVI metadata is used to filter out
-        unreliable spectral channels before further processing.
+        The bad band list (bbl) from the ENVI metadata is used to filter out unreliable spectral channels before further processing.
         """
         if self._img is not None:
             return self._img
@@ -332,9 +310,7 @@ class HSIMars:
         """
         Pad annotation matrix to match the processed HSI dimensions.
 
-        The annotation matrix may have different dimensions than the processed
-        HSI data after cropping. This method centers the annotations within
-        the target dimensions by adding symmetric padding.
+        The annotation matrix may have different dimensions than the processed HSI data after cropping. This method centers the annotations within the target dimensions by adding symmetric padding.
 
         Parameters
         ----------
@@ -348,8 +324,7 @@ class HSIMars:
 
         Notes
         -----
-        Padding is distributed symmetrically around the annotation data,
-        with any odd remainder added to the bottom/right edges.
+        Padding is distributed symmetrically around the annotation data, with any odd remainder added to the bottom/right edges.
         """
         # Get target shape from processed image
         img = self.get_img()
@@ -368,21 +343,14 @@ class HSIMars:
         """
         Load label names from the data description Excel file.
 
-        This method reads the data description Excel file and extracts the mapping
-        between numerical class labels and their human-interpretable names for the
-        current dataset.
+        This method reads the data description Excel file and extracts the mapping between numerical class labels and their human-interpretable names for the current dataset.
 
-        The method automatically identifies the dataset by extracting a two-letter
-        prefix from the HDR filename (e.g., "HC", "NF", or "UP") and locates the
-        corresponding section in the Excel file. It then parses the class ID and
-        class name columns to build the label mapping dictionary.
+        The method automatically identifies the dataset by extracting a two-letter prefix from the HDR filename (e.g., "HC", "NF", or "UP") and locates the corresponding section in the Excel file. It then parses the class ID and class name columns to build the label mapping dictionary.
 
         Returns
         -------
         dict[int, str]
-            A dictionary mapping numerical class labels (integers) to their
-            corresponding human-readable class names (strings). For example:
-            {1: 'Analcime', 2: 'Plagioclase', 3: 'Prehnite', ...}
+            A dictionary mapping numerical class labels (integers) to their corresponding human-readable class names (strings). For example: {1: 'Analcime', 2: 'Plagioclase', 3: 'Prehnite', ...}
 
             Returns an empty dictionary if:
             - The Excel file is not found
@@ -391,17 +359,11 @@ class HSIMars:
 
         Notes
         -----
-        If ``label_names_path`` was provided during initialization, that file
-        will be used. Otherwise, the method looks for a file named
-        ``data_description.xlsx`` in the same directory as the HDR file.
+        If ``label_names_path`` was provided during initialization, that file will be used. Otherwise, the method looks for a file named ``data_description.xlsx`` in the same directory as the HDR file.
 
-        The file should contain sections for each dataset, where each section
-        starts with a row containing the dataset name (e.g., "HC", "NF", "UP"),
-        followed by a header row with columns "Class  ID", "Class Name", and
-        "Total", and then data rows containing the class ID and name pairs.
+        The file should contain sections for each dataset, where each section starts with a row containing the dataset name (e.g., "HC", "NF", "UP"), followed by a header row with columns "Class  ID", "Class Name", and "Total", and then data rows containing the class ID and name pairs.
 
-        This method is called internally by :meth:`get_annotations` to populate
-        the ``label_names`` field of the ``HSIMarsAnnotationData`` named tuple.
+        This method is called internally by :meth:`get_annotations` to populate the ``label_names`` field of the ``HSIMarsAnnotationData`` named tuple.
 
         Examples
         --------
@@ -418,10 +380,7 @@ class HSIMars:
 
         Warnings
         --------
-        If the Excel file or dataset section cannot be found, this method
-        returns an empty dictionary rather than raising an exception. This
-        allows the annotation loading process to continue even when label
-        names are unavailable, though the ``label_names`` field will be empty.
+        If the Excel file or dataset section cannot be found, this method returns an empty dictionary rather than raising an exception. This allows the annotation loading process to continue even when label names are unavailable, though the ``label_names`` field will be empty.
         """
         # Determine which Excel file to use
         if self.label_names_path is not None:
@@ -484,20 +443,15 @@ class HSIMars:
         """
         Load and process ground truth annotation data.
 
-        Loads annotation labels from a MATLAB .mat file and aligns them with
-        the processed HSI data dimensions. The result is cached for efficient
-        subsequent access.
+        Loads annotation labels from a MATLAB .mat file and aligns them with the processed HSI data dimensions. The result is cached for efficient subsequent access.
 
         Returns
         -------
         NamedTuple or None
-            If annotations were provided during initialization, returns a named
-            tuple (HSIMarsAnnotationData) with the following attributes:
+            If annotations were provided during initialization, returns a named tuple (HSIMarsAnnotationData) with the following attributes:
 
             - **labels** : ndarray of shape (height, width)
-                2D array containing class labels for each pixel. Values are
-                unsigned integers representing different material classes.
-                A value of 0 typically indicates unlabeled/background pixels.
+                2D array containing class labels for each pixel. Values are unsigned integers representing different material classes. A value of 0 typically indicates unlabeled/background pixels.
             - **shape** : tuple of (height, width)
                 Dimensions of the annotation matrix.
             - **height** : int
@@ -507,10 +461,7 @@ class HSIMars:
             - **dtype** : str
                 Data type of the labels array ('uint8').
             - **label_names** : dict[int, str]
-                Dictionary mapping numerical class labels to human-readable
-                class names. For example: {1: 'Analcime', 2: 'Plagioclase'}.
-                Will be an empty dictionary if the label mapping file is not
-                found or cannot be parsed.
+                Dictionary mapping numerical class labels to human-readable class names. For example: {1: 'Analcime', 2: 'Plagioclase'}.  Will be an empty dictionary if the label mapping file is not found or cannot be parsed.
 
             Returns None if no annotation file was provided during initialization.
 
@@ -527,12 +478,9 @@ class HSIMars:
 
         Notes
         -----
-        The annotation matrix is automatically padded to match the dimensions
-        of the processed HSI data. This ensures pixel-level alignment between
-        spectral data and labels.
+        The annotation matrix is automatically padded to match the dimensions of the processed HSI data. This ensures pixel-level alignment between spectral data and labels.
 
-        The method implements lazy evaluation - annotations are only loaded
-        on the first call. Subsequent calls return the cached result.
+        The method implements lazy evaluation - annotations are only loaded on the first call. Subsequent calls return the cached result.
         """
         if self._ann is not None:
             return self._ann
@@ -578,8 +526,7 @@ class HSIMars:
         """
         Load both hyperspectral image and annotation data.
 
-        This convenience method loads both the HSI data and annotations (if available)
-        in a single call, ensuring both are cached for subsequent operations.
+        This convenience method loads both the HSI data and annotations (if available) in a single call, ensuring both are cached for subsequent operations.
 
         Returns
         -------
@@ -589,39 +536,38 @@ class HSIMars:
             1. **HSIMarsImageData** (NamedTuple):
 
                - **hsi** : ndarray
-                   The HSI data array of shape (height, width, channels).
+                    The HSI data array of shape (height, width, channels).
                - **wavelength** : ndarray
-                   Array of wavelength values in nm.
+                    Array of wavelength values in nm.
                - **shape** : tuple
-                   Dimensions (height, width, channels).
+                    Dimensions (height, width, channels).
                - **height** : int
-                   Number of pixel rows.
+                    Number of pixel rows.
                - **width** : int
-                   Number of pixel columns.
+                    Number of pixel columns.
                - **channels** : int
-                   Number of spectral bands.
+                    Number of spectral bands.
                - **dtype** : str
-                   Data type ('float32').
+                    Data type ('float32').
 
             2. **HSIMarsAnnotationData** (NamedTuple or None):
 
-               If annotations are available:
+                If annotations are available:
 
                - **labels** : ndarray
-                   Label array of shape (height, width).
+                    Label array of shape (height, width).
                - **shape** : tuple
-                   Dimensions (height, width).
+                    Dimensions (height, width).
                - **height** : int
-                   Number of pixel rows.
+                    Number of pixel rows.
                - **width** : int
-                   Number of pixel columns.
+                    Number of pixel columns.
                - **dtype** : str
-                   Data type ('uint8').
+                    Data type ('uint8').
                - **label_names** : dict[int, str]
-                   Dictionary mapping numerical class labels to human-readable
-                   class names.
+                    Dictionary mapping numerical class labels to human-readable class names.
 
-               Returns None if no annotations were provided.
+                Returns None if no annotations were provided.
 
         Examples
         --------
@@ -635,9 +581,7 @@ class HSIMars:
 
         Notes
         -----
-        This method is equivalent to calling `get_img()` and `get_annotations()`
-        separately, but provides a more convenient interface when both datasets
-        are needed.
+        This method is equivalent to calling `get_img()` and `get_annotations()` separately, but provides a more convenient interface when both datasets are needed.
         """
         return self.get_img(), self.get_annotations()
 
@@ -645,8 +589,7 @@ class HSIMars:
         """
         Prepare HSI data for visualization by creating a false-color RGB image.
 
-        Selects three spectral bands from the full hyperspectral cube and
-        normalizes them to 8-bit RGB format suitable for display.
+        Selects three spectral bands from the full hyperspectral cube and normalizes them to 8-bit RGB format suitable for display.
 
         Parameters
         ----------
@@ -660,9 +603,7 @@ class HSIMars:
 
         Notes
         -----
-        Uses the default bands specified in the ENVI header for false-color
-        visualization. These typically correspond to visible and near-infrared
-        wavelengths that provide good visual contrast.
+        Uses the default bands specified in the ENVI header for false-color visualization. These typically correspond to visible and near-infrared wavelengths that provide good visual contrast.
         """
         # Select the false-color bands for RGB visualization
         img = img[..., self._false_colour_bands]
@@ -678,9 +619,7 @@ class HSIMars:
         """
         Prepare annotation data for visualization with color mapping.
 
-        Converts label values to an 8-bit format, applies a colormap for
-        visual distinction between classes, and preserves background pixels
-        as black.
+        Converts label values to an 8-bit format, applies a colormap for visual distinction between classes, and preserves background pixels as black.
 
         Parameters
         ----------
@@ -694,9 +633,7 @@ class HSIMars:
 
         Notes
         -----
-        Pixels with label value 0 (background/unlabeled) are displayed as
-        black (0, 0, 0). Other labels are mapped to colors using the TURBO
-        colormap for maximum visual distinction.
+        Pixels with label value 0 (background/unlabeled) are displayed as black (0, 0, 0). Other labels are mapped to colors using the TURBO colormap for maximum visual distinction.
         """
         # Identify background pixels (label == 0)
         mask = img == 0
@@ -718,8 +655,7 @@ class HSIMars:
         """
         Display an image in an OpenCV window with keyboard interaction.
 
-        Creates a resizable window, displays the image, and waits for a
-        keypress before closing the window.
+        Creates a resizable window, displays the image, and waits for a keypress before closing the window.
 
         Parameters
         ----------
@@ -730,8 +666,7 @@ class HSIMars:
 
         Notes
         -----
-        The window is created with WINDOW_NORMAL flag, making it resizable.
-        Press any key to close the window.
+        The window is created with WINDOW_NORMAL flag, making it resizable.  Press any key to close the window.
         """
         # Create a resizable named window
         cv2.namedWindow(title, flags=cv2.WINDOW_NORMAL)
@@ -743,9 +678,7 @@ class HSIMars:
         """
         Display the hyperspectral image as a false-color RGB visualization.
 
-        Opens an interactive OpenCV window showing the HSI data rendered using
-        three representative spectral bands. The window can be resized and
-        closed by pressing any key.
+        Opens an interactive OpenCV window showing the HSI data rendered using three representative spectral bands. The window can be resized and closed by pressing any key.
 
         Examples
         --------
@@ -754,9 +687,7 @@ class HSIMars:
 
         Notes
         -----
-        The false-color bands are automatically selected from the ENVI header
-        metadata, typically representing visible and near-infrared wavelengths
-        for optimal visual interpretation.
+        The false-color bands are automatically selected from the ENVI header metadata, typically representing visible and near-infrared wavelengths for optimal visual interpretation.
         """
         # Load and prepare the HSI for visualization
         img = self.get_img().hsi
@@ -767,9 +698,7 @@ class HSIMars:
         """
         Display the ground truth annotations with color-coded labels.
 
-        Opens an interactive OpenCV window showing the annotation labels
-        with a colormap applied for visual distinction between classes.
-        Background pixels (label 0) are displayed in black.
+        Opens an interactive OpenCV window showing the annotation labels with a colormap applied for visual distinction between classes. Background pixels (label 0) are displayed in black.
 
         Raises
         ------
@@ -785,8 +714,7 @@ class HSIMars:
 
         Notes
         -----
-        The TURBO colormap is applied to provide maximum visual distinction
-        between different material classes in the annotations.
+        The TURBO colormap is applied to provide maximum visual distinction between different material classes in the annotations.
         """
         # Load and prepare annotations for visualization
         ann_data = self.get_annotations()
@@ -824,9 +752,7 @@ class HSIMars:
 
         Notes
         -----
-        The overlay uses 75% weight for the HSI and 25% weight for the
-        annotations, providing a good balance between seeing spectral features
-        and class boundaries.
+        The overlay uses 75% weight for the HSI and 25% weight for the annotations, providing a good balance between seeing spectral features and class boundaries.
         """
         # Load and prepare the HSI
         img = self.get_img().hsi
@@ -855,10 +781,7 @@ class HSIMars:
         """
         Plot spectral signature(s) for specified pixel location(s).
 
-        Generates a line plot showing reflectance/intensity as a function of
-        wavelength. For multiple pixels, plots the mean spectrum with standard
-        deviation shading. Optionally applies convex hull removal to normalize
-        continuum and highlights spectral band regions.
+        Generates a line plot showing reflectance/intensity as a function of wavelength. For multiple pixels, plots the mean spectrum with standard deviation shading. Optionally applies convex hull removal to normalize continuum and highlights spectral band regions.
 
         Parameters
         ----------
@@ -870,9 +793,7 @@ class HSIMars:
 
             Coordinates are in (row, column) format, 0-indexed.
         convex_hull : bool, optional
-            If True, applies convex hull removal to normalize the spectrum
-            continuum. This technique is useful for analyzing absorption
-            features by removing the overall spectral shape. Default is False.
+            If True, applies convex hull removal to normalize the spectrum continuum. This technique is useful for analyzing absorption features by removing the overall spectral shape. Default is False.
         bands : bool, optional
             If True, overlays colored regions indicating spectral band types:
             - VIS (Visible): < 750 nm (green)
@@ -881,9 +802,7 @@ class HSIMars:
             - MWIR (Mid-Wave Infrared): > 3000 nm (magenta)
             Default is False.
         output : str | Path, optional
-            Path to save the plot as an image file. If None (default),
-            displays the plot interactively using matplotlib's show().
-            The directory will be created if it doesn't exist.
+            Path to save the plot as an image file. If None (default), displays the plot interactively using matplotlib's show().  The directory will be created if it doesn't exist.
 
         Examples
         --------
@@ -900,13 +819,9 @@ class HSIMars:
 
         Notes
         -----
-        Convex hull removal is performed using the pysptools library. This
-        technique divides the spectrum by its convex hull envelope, effectively
-        normalizing the continuum and emphasizing absorption features.
+        Convex hull removal is performed using the pysptools library. This technique divides the spectrum by its convex hull envelope, effectively normalizing the continuum and emphasizing absorption features.
 
-        For multiple pixels, the standard deviation is shown as a shaded region
-        around the mean spectrum, providing visual indication of spectral
-        variability within the selected region.
+        For multiple pixels, the standard deviation is shown as a shaded region around the mean spectrum, providing visual indication of spectral variability within the selected region.
         """
         # Load the hyperspectral image data
         img = self.get_img()
@@ -948,7 +863,9 @@ class HSIMars:
         # Overlay spectral band regions if requested
         if bands:
             # Position text labels at 75% of the y-axis range
-            y_pos = 0.75 * (spec_mean.max() - spec_mean.min()) + spec_mean.min()
+            y_pos = (
+                0.75 * (spec_mean.max() - spec_mean.min()) + spec_mean.min()
+            )
 
             # Visible band (VIS): < 750 nm
             ax.axvspan(wl.min(), 750, color="g", alpha=0.15)
@@ -1039,9 +956,7 @@ class HSIMars:
         """
         Plot the intensity distribution histogram for a specific spectral band.
 
-        Generates a probability density histogram showing the distribution of
-        pixel intensity values across the image for the selected wavelength band.
-        Useful for analyzing the statistical properties of spectral features.
+        Generates a probability density histogram showing the distribution of pixel intensity values across the image for the selected wavelength band. Useful for analyzing the statistical properties of spectral features.
 
         Parameters
         ----------
@@ -1049,12 +964,9 @@ class HSIMars:
             Spectral band selector. Can be:
 
             - **int**: Direct band index (0-based) in the spectral dimension.
-            - **float**: Wavelength in nanometers. The closest available
-              wavelength will be automatically selected.
+            - **float**: Wavelength in nanometers. The closest available wavelength will be automatically selected.
         output : str | Path, optional
-            Path to save the histogram plot as an image file. If None (default),
-            displays the plot interactively using matplotlib's show().
-            The directory will be created if it doesn't exist.
+            Path to save the histogram plot as an image file. If None (default), displays the plot interactively using matplotlib's show(). The directory will be created if it doesn't exist.
 
         Examples
         --------
@@ -1066,16 +978,15 @@ class HSIMars:
         >>> hsi.plot_histogram(band=1500.0)
 
         >>> # Save histogram to file
-        >>> hsi.plot_histogram(band=1500.0, output="plots/histogram_1500nm.png")
+        >>> hsi.plot_histogram(
+        ...     band=1500.0, output="plots/histogram_1500nm.png"
+        ... )
 
         Notes
         -----
-        The histogram uses 100 bins and is normalized to show probability
-        density rather than raw counts. This normalization facilitates
-        comparison between different bands or images.
+        The histogram uses 100 bins and is normalized to show probability density rather than raw counts. This normalization facilitates comparison between different bands or images.
 
-        The histogram includes all valid pixels in the image for the selected
-        band, providing a global view of intensity distribution.
+        The histogram includes all valid pixels in the image for the selected band, providing a global view of intensity distribution.
         """
         # Load the hyperspectral image data
         img = self.get_img()

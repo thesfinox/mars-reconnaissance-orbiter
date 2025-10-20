@@ -1,18 +1,18 @@
 Contributing Guide
 ==================
 
-We welcome contributions to the HSI Mars project! This guide will help you get started.
+Contributions to the HSI Mars project are welcome. This guide explains how to contribute.
 
 Ways to Contribute
 ------------------
 
-There are many ways to contribute to this project:
+You can contribute in several ways:
 
 * 🐛 Report bugs
 * 💡 Suggest new features
 * 📝 Improve documentation
 * 🧪 Add tests
-* 💻 Submit code improvements
+* 💻 Submit code
 * 📊 Share example analyses
 
 Getting Started
@@ -64,7 +64,7 @@ Using ``pip``:
 
    pre-commit install
 
-This ensures code quality checks run automatically before each commit.
+This runs code quality checks automatically before each commit.
 
 Development Workflow
 --------------------
@@ -78,7 +78,7 @@ Development Workflow
 
 Use descriptive branch names:
 
-* ``feature/add-new-visualization``
+* ``feature/add-new-visualisation``
 * ``bugfix/fix-annotation-padding``
 * ``docs/improve-installation-guide``
 
@@ -87,11 +87,11 @@ Use descriptive branch names:
 
 Follow these guidelines:
 
-* Write clear, descriptive commit messages
+* Write clear commit messages
 * Add docstrings to all functions and classes
 * Follow PEP 8 style guidelines
-* Add type hints where appropriate
-* Keep changes focused and atomic
+* Add type hints where needed
+* Keep changes focused
 
 3. Write Tests
 ~~~~~~~~~~~~~~
@@ -321,7 +321,7 @@ Ensure your PR:
 * ✅ Maintains or improves code coverage
 * ✅ Follows code style guidelines
 * ✅ Includes documentation updates
-* ✅ Has a clear, descriptive title
+* ✅ Has a clear title
 * ✅ Includes a detailed description
 
 PR Description Template
@@ -390,8 +390,8 @@ Be Respectful
 ~~~~~~~~~~~~~
 
 * Use welcoming and inclusive language
-* Respect differing viewpoints
-* Accept constructive criticism gracefully
+* Respect different viewpoints
+* Accept constructive criticism
 * Focus on what's best for the community
 
 Communication

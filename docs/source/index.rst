@@ -9,19 +9,19 @@ HSI Mars: Hyperspectral Image Analysis for Mars Reconnaissance Orbiter
    :target: https://www.gnu.org/licenses/gpl-3.0
    :alt: License: GPL v3
 
-A Python package for loading, processing, and visualizing hyperspectral imaging (HSI) data from the `CRISM <http://crism.jhuapl.edu/>`_ instrument aboard NASA's Mars Reconnaissance Orbiter (MRO).
+A Python package for loading, processing, and visualising hyperspectral imaging (HSI) data from the `CRISM <http://crism.jhuapl.edu/>`_ instrument aboard NASA's Mars Reconnaissance Orbiter (MRO).
 
 Overview
 --------
 
-This package provides intuitive tools for working with Martian hyperspectral data, enabling researchers to:
+This package provides tools for working with Martian hyperspectral data:
 
 * 📊 Load and process `CRISM <http://crism.jhuapl.edu/>`_ hyperspectral images in ENVI format
-* 🏷️ Handle ground truth annotations for machine learning applications
-* 🎨 Create false-color visualizations of spectral data
-* 📈 Plot and analyze spectral signatures with advanced processing
+* 🏷️ Handle ground truth annotations for machine learning
+* 🎨 Create false-colour visualisations of spectral data
+* 📈 Plot and analyse spectral signatures
 * 📉 Generate histograms for spectral band analysis
-* ⚡ Work efficiently with large datasets through lazy loading
+* ⚡ Work with large datasets through lazy loading
 
 Dataset
 -------
@@ -34,7 +34,7 @@ This package is designed to work with the dataset published by Xi *et al.* (2025
 Quick Start
 -----------
 
-Here's a simple example to get you started:
+A simple example:
 
 .. code-block:: python
 
@@ -48,7 +48,7 @@ Here's a simple example to get you started:
    print(f"Image shape: {img_data.shape}")
    print(f"Wavelength range: {img_data.wavelength.min():.1f} - {img_data.wavelength.max():.1f} nm")
 
-   # Display the false-color image
+   # Display the false-colour image
    hsi.display_hsi()
 
    # Plot spectrum for a specific pixel
@@ -110,38 +110,38 @@ Key Features
 Memory-Efficient Processing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The package implements lazy loading to optimize memory usage when working with large hyperspectral datasets. Data is only loaded from disk when first accessed and then cached for efficient subsequent operations.
+The package uses lazy loading for memory efficiency when working with large hyperspectral datasets. Data loads from disk only when first accessed, then caches for later use.
 
 Spectral Analysis Tools
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-* **Spectral Signatures**: Plot individual or averaged spectra with optional convex hull removal for continuum normalization
-* **Band Visualization**: Overlay spectral band regions (VIS, NIR, SWIR, MWIR) on plots
-* **Statistical Analysis**: Generate histograms for analyzing spectral band distributions
+* **Spectral Signatures**: Plot individual or averaged spectra with optional convex hull removal for continuum normalisation
+* **Band Visualisation**: Overlay spectral band regions (VIS, NIR, SWIR, MWIR) on plots
+* **Statistical Analysis**: Generate histograms for analysing spectral band distributions
 
-Visualization Capabilities
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Visualisation Capabilities
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* **False-Color Images**: Render HSI data using representative spectral bands
-* **Annotation Overlays**: Display ground truth labels with color-coded classes
+* **False-Colour Images**: Render HSI data using representative spectral bands
+* **Annotation Overlays**: Display ground truth labels with colour-coded classes
 * **Interactive Display**: OpenCV-based interactive windows for data exploration
 
 Contributing
 ------------
 
-We welcome contributions! To contribute:
+Contributions are welcome. To contribute:
 
 1. Fork the repository on GitHub
-2. Create a feature branch (``git checkout -b feature/amazing-feature``)
+2. Create a feature branch (``git checkout -b feature/new-feature``)
 3. Make your changes
 4. Run tests (``pytest tests/``)
-5. Commit your changes (``git commit -m 'Add amazing feature'``)
-6. Push to your fork (``git push origin feature/amazing-feature``)
-7. Open a Pull Request
+5. Commit your changes (``git commit -m 'Add new feature'``)
+6. Push to your fork (``git push origin feature/new-feature``)
+7. Open a pull request
 
-Please ensure your code follows the existing style and includes appropriate tests and documentation.
+Ensure your code follows the existing style and includes tests and documentation.
 
-License
+Licence
 -------
 
 This project is licensed under the GNU General Public License v3.0. See the LICENSE file for details.

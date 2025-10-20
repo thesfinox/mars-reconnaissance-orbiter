@@ -1,12 +1,12 @@
 Tutorials
 =========
 
-This section provides comprehensive, hands-on tutorials for working with hyperspectral imaging data from Mars. The tutorials are presented as interactive Jupyter notebooks that you can download and run locally.
+This section provides hands-on tutorials for working with hyperspectral imaging data from Mars. The tutorials are presented as interactive Jupyter notebooks that you can download and run locally.
 
 Getting the Notebooks
 ---------------------
 
-The tutorial notebooks are located in the ``notebooks/`` directory of the repository. You can:
+The tutorial notebooks are in the ``notebooks/`` directory of the repository. You can:
 
 1. **Run them locally** after cloning the repository:
 
@@ -33,7 +33,7 @@ Before working through the tutorials, ensure you have:
 Tutorial Notebooks
 ------------------
 
-The following Jupyter notebooks provide step-by-step tutorials with executable code, visualizations, and detailed explanations.
+The following Jupyter notebooks provide step-by-step tutorials with executable code, visualisations, and detailed explanations.
 
 1. Exploratory Data Analysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -49,8 +49,8 @@ The following Jupyter notebooks provide step-by-step tutorials with executable c
 
 * Understanding hyperspectral imaging and the `CRISM <http://crism.jhuapl.edu/>`_ instrument on Mars
 * Loading and inspecting multidimensional data structures
-* Visualizing spectral signatures and false-color images
-* Analyzing ground truth annotations for supervised learning
+* Visualising spectral signatures and false-colour images
+* Analysing ground truth annotations for supervised learning
 * Statistical analysis and data quality assessment
 * Preprocessing considerations for machine learning
 * Feature engineering in high-dimensional spaces
@@ -61,11 +61,11 @@ The following Jupyter notebooks provide step-by-step tutorials with executable c
 After completing this tutorial, you will be able to:
 
 * Load and work with hyperspectral data using the HSI Mars package
-* Create publication-quality visualizations of spectral data
+* Create publication-quality visualisations of spectral data
 * Understand spectral signatures and their role in material identification
-* Prepare hyperspectral data for machine learning applications
+* Prepare hyperspectral data for machine learning
 * Assess data quality and identify potential issues
-* Understand the challenges unique to high-dimensional remote sensing data
+* Understand the challenges of high-dimensional remote sensing data
 
 2. Basic Usage Examples
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -81,7 +81,7 @@ After completing this tutorial, you will be able to:
 
 * Quick examples of basic package functionality
 * Loading hyperspectral images and accessing metadata
-* Creating visualizations and false-color composites
+* Creating visualisations and false-colour composites
 * Plotting spectral signatures
 * Working with ground truth annotations
 * Essential HSIMars class methods

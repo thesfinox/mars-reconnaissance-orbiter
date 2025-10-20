@@ -302,10 +302,10 @@ Extract and analyze specific portions of the spectrum:
    plt.savefig('results/swir_spectrum.png', dpi=150, bbox_inches='tight')
    print("Saved SWIR spectrum plot")
 
-Custom Visualization
+Custom Visualisation
 --------------------
 
-Create custom visualizations using matplotlib:
+Create custom visualisations using matplotlib:
 
 .. code-block:: python
 
@@ -324,21 +324,21 @@ Create custom visualizations using matplotlib:
    # Create custom figure
    fig = plt.figure(figsize=(15, 5))
 
-   # Panel 1: False-color image
+   # Panel 1: False-colour image
    ax1 = plt.subplot(131)
    # Use specific bands for RGB
-   false_color = img_data.hsi[:, :, [50, 100, 150]]
-   false_color = (false_color - false_color.min()) / (false_color.max() - false_color.min())
-   ax1.imshow(false_color)
-   ax1.set_title('False Color Image')
+   false_colour = img_data.hsi[:, :, [50, 100, 150]]
+   false_colour = (false_colour - false_colour.min()) / (false_colour.max() - false_colour.min())
+   ax1.imshow(false_colour)
+   ax1.set_title('False Colour Image')
    ax1.axis('off')
 
    # Panel 2: Annotations
    ax2 = plt.subplot(132)
-   # Create custom colormap
+   # Create custom colourmap
    n_classes = len(np.unique(ann_data.labels))
-   colors = plt.cm.tab10(np.linspace(0, 1, n_classes))
-   cmap = ListedColormap(colors)
+   colours = plt.cm.tab10(np.linspace(0, 1, n_classes))
+   cmap = ListedColormap(colours)
 
    im2 = ax2.imshow(ann_data.labels, cmap=cmap, interpolation='nearest')
    ax2.set_title('Ground Truth Labels')
@@ -355,7 +355,7 @@ Create custom visualizations using matplotlib:
 
    plt.tight_layout()
    plt.savefig('results/custom_visualization.png', dpi=150, bbox_inches='tight')
-   print("Saved custom visualization")
+   print("Saved custom visualisation")
 
 Performance Tips
 ----------------
