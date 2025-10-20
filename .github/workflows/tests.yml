@@ -128,7 +128,7 @@ jobs:
 
       - name: Install package
         run: |
-          uv sync
+          uv sync --group docs
 
       - name: Run check-docs
         run: |
